@@ -26,26 +26,7 @@ def Mstar(graph, v_I, v_F):
                 v_k = configurations[v_k][3]
             return res[::-1]
         if len(phi(v_k)) == 0:
-            V_k = []
-            for i in range(len(v_k)):
-                vi_k = v_k[i]
-                if vi_k in configurations[v_k][1]:
-                    # ADD all the neighbours
-                    for nbr in graph[vi_k]:
-                        v_k_list = list(v_k)
-                        v_k_list[i] = nbr
-                        new_configuration = tuple(v_k_list)
-                        if new_configuration not in configurations:
-                            configurations[new_configuration] = [float('inf'), set(), [], None]
-                        V_k.append(new_configuration)
-                else:
-                    path = policies[i][v_k[i]][0]
-                    v_k_list = list(v_k)
-                    v_k_list[i] = path[1] if len(path) > 1 else path[0]
-                    new_configuration = tuple(v_k_list)
-                    if new_configuration not in configurations:
-                        configurations[new_configuration] = [float('inf'), set(), [], None]
-                    V_k.append(new_configuration)
+            V_k = get_limited_neighbours_new(v_k, configurations, graph, policies)
             for v_l in V_k:
                 configurations[v_l][1].update(phi(v_l))
                 configurations[v_l][2].append(v_k)
@@ -56,6 +37,54 @@ def Mstar(graph, v_I, v_F):
                     configurations[v_l][3] = v_k
                     open.append(v_l)
     return "No path exists, or I am a retard"
+
+
+def get_limited_neighbours_new(v_k, configurations, graph, policies):
+    V_k = []
+    for i in range(len(v_k)):
+        vi_k = v_k[i]
+        if vi_k in configurations[v_k][1]:
+            # ADD all the neighbours
+            for nbr in graph[vi_k]:
+                v_k_list = list(v_k)
+                v_k_list[i] = nbr
+                new_configuration = tuple(v_k_list)
+                if new_configuration not in configurations:
+                    configurations[new_configuration] = [float('inf'), set(), [], None]
+                V_k.append(new_configuration)
+        else:
+            path = policies[i][v_k[i]][0]
+            v_k_list = list(v_k)
+            v_k_list[i] = path[1] if len(path) > 1 else path[0]
+            new_configuration = tuple(v_k_list)
+            if new_configuration not in configurations:
+                configurations[new_configuration] = [float('inf'), set(), [], None]
+            V_k.append(new_configuration)
+    return V_k
+
+
+def get_limited_neighbours_old(v_k, configurations, graph, policies):
+    V_k = []
+    for i in range(len(v_k)):
+        vi_k = v_k[i]
+        if vi_k in configurations[v_k][1]:
+            # ADD all the neighbours
+            for nbr in graph[vi_k]:
+                v_k_list = list(v_k)
+                v_k_list[i] = nbr
+                new_configuration = tuple(v_k_list)
+                if new_configuration not in configurations:
+                    configurations[new_configuration] = [float('inf'), set(), [], None]
+                V_k.append(new_configuration)
+        else:
+            path = policies[i][v_k[i]][0]
+            v_k_list = list(v_k)
+            v_k_list[i] = path[1] if len(path) > 1 else path[0]
+            new_configuration = tuple(v_k_list)
+            if new_configuration not in configurations:
+                configurations[new_configuration] = [float('inf'), set(), [], None]
+            V_k.append(new_configuration)
+    return V_k
 
 
 def backprop(v_k, C_l, open, configurations):
