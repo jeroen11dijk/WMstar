@@ -1,3 +1,5 @@
+import time
+
 import networkx as nx
 from matplotlib.pyplot import show
 import itertools
@@ -11,7 +13,7 @@ def Mstar(graph, v_I, v_F):
     for i in range(len(v_F)):
         opt = {}
         for node in G:
-            path = nx.astar_path(G, node, v_F[i], heuristic_nodes)
+            path = nx.astar_path(G, node, v_F[i])
             weight = sum(G[u][v].get('weight', 1) for u, v in zip(path[:-1], path[1:]))
             opt[node] = (path, weight)
         policies.append(opt)
@@ -55,6 +57,12 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
             path = policies[i][v_k[i]][0]
             options_i.append(path[1] if len(path) > 1 else path[0])
         options.append(options_i)
+    if len(options) == 1:
+        option = options[0][0]
+        if option not in configurations:
+            configurations[option] = [float('inf'), set(), [], None]
+        V_k.append(options[0][0])
+        return V_k
     for element in itertools.product(*options):
         if element not in configurations:
             configurations[element] = [float('inf'), set(), [], None]
@@ -73,14 +81,14 @@ def backprop(v_k, C_l, open, configurations):
 
 
 def get_edge_weight(v_k, v_l, graph):
-    if v_k[0] != v_l[0]:
-        egde_data = graph.get_edge_data(v_k[0], v_l[0])
-        return egde_data.get('weight') if egde_data.get('weight') is not None else 1
-    elif v_k[1] != v_l[1]:
-        egde_data = graph.get_edge_data(v_k[1], v_l[1])
-        return egde_data.get('weight') if egde_data.get('weight') is not None else 1
-    else:
-        return 1
+    cost = 0
+    for i in range(len(v_k)):
+        if v_k[0] != v_l[0]:
+            egde_data = graph.get_edge_data(v_k[0], v_l[0])
+            cost += egde_data.get('weight') if egde_data.get('weight') is not None else 1
+        else:
+            cost += 1
+    return cost
 
 
 # Check for collisions
@@ -104,7 +112,6 @@ def heuristic_configuration(v_k, policies):
 def heuristic_nodes(u, v):
     return abs((u[0] - v[0])) + abs((u[1] - v[1]))
 
-
 G = nx.grid_2d_graph(4, 4)
 
 v_I = ((2, 1), (0, 1), (1, 2))
@@ -113,4 +120,18 @@ v_F = ((0, 1), (2, 1), (1, 0))
 nx.draw_networkx(G)
 show()
 
-print(Mstar(G, v_I, v_F))
+# print(Mstar(G, v_I, v_F))
+
+G = nx.Graph()
+
+G.add_edge('a', 'b')
+G.add_edge('a', 'c', weight=0.3)
+G.add_edge('c', 'd', weight=0.1)
+G.add_edge('c', 'e', weight=0.7)
+G.add_edge('c', 'f', weight=0.9)
+G.add_edge('a', 'd', weight=0.3)
+
+nx.draw_networkx(G)
+show()
+
+print(Mstar(G, ('a'), ('c')))
