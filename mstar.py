@@ -2,6 +2,7 @@ import networkx as nx
 from matplotlib.pyplot import show
 import itertools
 
+
 def Mstar(graph, v_I, v_F):
     policies = []
     # Dictionary for every configuration
@@ -18,9 +19,9 @@ def Mstar(graph, v_I, v_F):
     open = [v_I]
     while len(open) > 0:
         open.sort(key=lambda x: configurations[x][0] + heuristic_configuration(x, policies))
-        v_k = open.pop()
+        v_k = open.pop(0)
         if v_k == v_F:
-            res = []
+            res = [v_F]
             while configurations[v_k][3] is not None:
                 res.append(configurations[v_k][3])
                 v_k = configurations[v_k][3]
@@ -45,8 +46,9 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
     for i in range(len(v_k)):
         vi_k = v_k[i]
         options_i = []
-        if vi_k in configurations[v_k][1]:
+        if i in configurations[v_k][1]:
             # ADD all the neighbours
+            options_i.append(vi_k)
             for nbr in graph[vi_k]:
                 options_i.append(nbr)
         else:
@@ -80,15 +82,16 @@ def get_edge_weight(v_k, v_l, graph):
     else:
         return 1
 
+
 # Check for collisions
 def phi(v_k):
-    seen = []
-    collisions = []
-    for pos in v_k:
-        if pos in seen:
-            collisions.append(pos)
-        seen.append(pos)
-    return collisions
+    observed = {}
+    for i, val in enumerate(v_k):
+        if val in observed:
+            observed[val].append(i)
+        else:
+            observed[val] = [i]
+    return [item for sublist in (val for val in observed.values() if len(val) - 1) for item in sublist]
 
 
 def heuristic_configuration(v_k, policies):
@@ -104,7 +107,10 @@ def heuristic_nodes(u, v):
 
 G = nx.grid_2d_graph(4, 4)
 
-v_I = ((0, 0), (0, 1))
-v_F = ((2, 3), (0, 3))
+v_I = ((2, 1), (0, 1), (1, 2))
+v_F = ((0, 1), (2, 1), (1, 0))
+
+nx.draw_networkx(G)
+show()
 
 print(Mstar(G, v_I, v_F))

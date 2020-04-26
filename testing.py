@@ -1,5 +1,5 @@
 import networkx as nx
-from matplotlib.pyplot import show
+from matplotlib.pyplot import show, axis
 
 G = nx.grid_2d_graph(4, 4)
 
