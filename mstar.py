@@ -83,8 +83,8 @@ def backprop(v_k, C_l, open, configurations):
 def get_edge_weight(v_k, v_l, graph):
     cost = 0
     for i in range(len(v_k)):
-        if v_k[0] != v_l[0]:
-            egde_data = graph.get_edge_data(v_k[0], v_l[0])
+        if v_k[i] != v_l[i]:
+            egde_data = graph.get_edge_data(v_k[i], v_l[i])
             cost += egde_data.get('weight') if egde_data.get('weight') is not None else 1
         else:
             cost += 1
@@ -108,10 +108,6 @@ def heuristic_configuration(v_k, policies):
         cost += policies[i][v_k[i]][1]
     return cost
 
-
-def heuristic_nodes(u, v):
-    return abs((u[0] - v[0])) + abs((u[1] - v[1]))
-
 G = nx.grid_2d_graph(4, 4)
 
 v_I = ((2, 1), (0, 1), (1, 2))
@@ -125,7 +121,7 @@ show()
 G = nx.Graph()
 
 G.add_edge('a', 'b')
-G.add_edge('a', 'c', weight=0.3)
+G.add_edge('a', 'c', weight=12)
 G.add_edge('c', 'd', weight=0.1)
 G.add_edge('c', 'e', weight=0.7)
 G.add_edge('c', 'f', weight=0.9)
@@ -134,4 +130,4 @@ G.add_edge('a', 'd', weight=0.3)
 nx.draw_networkx(G)
 show()
 
-print(Mstar(G, ('a'), ('c')))
+print(Mstar(G, ('e', 'b'), ('b', 'f')))
