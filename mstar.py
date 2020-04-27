@@ -6,30 +6,23 @@ import itertools
 
 
 def Mstar(graph, v_I, v_F):
-    policies = []
     # Dictionary for every configuration
     # List = [cost, collision set, back_set, back_ptr]
     configurations = {}
-    for i in range(len(v_F)):
-        opt = {}
-        for node in G:
-            path = nx.astar_path(G, node, v_F[i])
-            weight = sum(G[u][v].get('weight', 1) for u, v in zip(path[:-1], path[1:]))
-            opt[node] = (path, weight)
-        policies.append(opt)
+    policy = nx.floyd_warshall_predecessor_and_distance(G)
     configurations[v_I] = [0, set(), [], None]
     open = [v_I]
     while len(open) > 0:
-        open.sort(key=lambda x: configurations[x][0] + heuristic_configuration(x, policies))
+        open.sort(key=lambda x: configurations[x][0] + heuristic_configuration(x, v_F, policy))
         v_k = open.pop(0)
         if v_k == v_F:
             res = [v_F]
             while configurations[v_k][3] is not None:
                 res.append(configurations[v_k][3])
                 v_k = configurations[v_k][3]
-            return res[::-1]
+            return res[::-1], configurations[v_F][0]
         if len(phi(v_k)) == 0:
-            V_k = get_limited_neighbours(v_k, configurations, graph, policies)
+            V_k = get_limited_neighbours(v_k, v_F, configurations, graph, policy)
             for v_l in V_k:
                 configurations[v_l][1].update(phi(v_l))
                 configurations[v_l][2].append(v_k)
@@ -42,7 +35,7 @@ def Mstar(graph, v_I, v_F):
     return "No path exists, or I am a retard"
 
 
-def get_limited_neighbours(v_k, configurations, graph, policies):
+def get_limited_neighbours(v_k, v_F, configurations, graph, policy):
     V_k = []
     options = []
     for i in range(len(v_k)):
@@ -54,8 +47,12 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
             for nbr in graph[vi_k]:
                 options_i.append(nbr)
         else:
-            path = policies[i][v_k[i]][0]
-            options_i.append(path[1] if len(path) > 1 else path[0])
+            source = v_k[i]
+            target = v_F[i]
+            if source == target:
+                options_i.append(target)
+            else:
+                options_i.append(policy[0][target][source])
         options.append(options_i)
     if len(options) == 1:
         option = options[0][0]
@@ -102,32 +99,31 @@ def phi(v_k):
     return [item for sublist in (val for val in observed.values() if len(val) - 1) for item in sublist]
 
 
-def heuristic_configuration(v_k, policies):
+def heuristic_configuration(v_k, v_F, policy):
     cost = 0
     for i in range(len(v_k)):
-        cost += policies[i][v_k[i]][1]
+        source = v_k[i]
+        target = v_F[i]
+        cost += policy[1][target][source]
     return cost
 
-G = nx.grid_2d_graph(4, 4)
-
-v_I = ((2, 1), (0, 1), (1, 2))
-v_F = ((0, 1), (2, 1), (1, 0))
-
-nx.draw_networkx(G)
-show()
-
-# print(Mstar(G, v_I, v_F))
 
 G = nx.Graph()
 
 G.add_edge('a', 'b')
-G.add_edge('a', 'c', weight=12)
+G.add_edge('a', 'c', weight=0.4)
 G.add_edge('c', 'd', weight=0.1)
 G.add_edge('c', 'e', weight=0.7)
 G.add_edge('c', 'f', weight=0.9)
 G.add_edge('a', 'd', weight=0.3)
+G.add_edge('b', 'f', weight=0.2)
+G.add_edge('d', 'f', weight=0.4)
 
 nx.draw_networkx(G)
 show()
 
-print(Mstar(G, ('e', 'b'), ('b', 'f')))
+print(Mstar(G, ('e', 'b', 'a', 'c'), ('b', 'f', 'e', 'a')))
+
+policy = nx.floyd_warshall_predecessor_and_distance(G)
+
+print(policy[1]['a']['a'])
