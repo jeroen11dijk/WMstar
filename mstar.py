@@ -88,7 +88,7 @@ def get_edge_weight(v_k, v_l, graph):
             egde_data = graph.get_edge_data(v_k[i], v_l[i])
             cost += egde_data.get('weight') if egde_data.get('weight') is not None else 1
         else:
-            cost += 0.5
+            cost += 0
     return cost
 
 
@@ -133,11 +133,23 @@ G.add_edge('j', 'c', weight=0.1)
 G.add_edge('h', 'k', weight=0.6)
 G.add_edge('a', 'k', weight=0.7)
 G.add_edge('b', 'h', weight=0.4)
+G.add_edge('l', 'a', weight=0.1)
+G.add_edge('l', 'h', weight=0.3)
+G.add_edge('m', 'c', weight=0.8)
+G.add_edge('m', 'f', weight=0.3)
+G.add_edge('n', 'g', weight=0.7)
+G.add_edge('n', 'h', weight=0.9)
+G.add_edge('n', 'a', weight=0.5)
+G.add_edge('o', 'a', weight=0.3)
+G.add_edge('o', 'b', weight=0.1)
+G.add_edge('o', 'k', weight=0.2)
+G.add_edge('o', 'n', weight=0.9)
 
-# nx.draw_networkx(G)
-# show()
+nx.draw_networkx(G)
+show()
+v_I = ('j', 'm', 'b', 'a', 'c')
+v_F = ('l', 'b', 'h', 'j', 'g')
 
-# print(Mstar(G, ('e', 'a', 'b', 'f'), ('b', 'e', 'd', 'g')))
-v_I = ('e', 'a', 'b', 'f')
-v_F = ('b', 'e', 'd', 'g')
+# print(Mstar(G, v_I, v_F))
+
 cProfile.run('Mstar(G, v_I, v_F)')
