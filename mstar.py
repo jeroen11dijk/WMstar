@@ -34,14 +34,15 @@ def Mstar(graph, v_I, v_F):
                 res.append(configurations[v_k][3])
                 v_k = configurations[v_k][3]
             return res[::-1], configurations[v_F][0]
-        if next(phi(v_l), None) is None:
+        if len(phi(v_k)) == 0:
             V_k = get_limited_neighbours(v_k, configurations, graph, policy)
             for v_l in V_k:
-                configurations[v_l][1].update(phi(v_l))
+                collisions = phi(v_l)
+                configurations[v_l][1].update(collisions)
                 configurations[v_l][2].append(v_k)
                 backprop(v_k, configurations[v_l][1], open, configurations, policy)
                 f = get_edge_weight(v_k, v_l, graph)
-                if next(phi(v_l), None) is None and configurations[v_k][0] + f < configurations[v_l][0]:
+                if len(collisions) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
                     heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policy), v_l))
@@ -106,7 +107,7 @@ def phi(v_k):
         else:
             seen.add(val)
     double = set(double)
-    return (i for i, val in enumerate(v_k) if val in double)
+    return [i for i, val in enumerate(v_k) if val in double]
 
 
 # Credit to Hytak
@@ -151,5 +152,4 @@ v_I = ('j', 'm', 'b', 'a', 'c', 'f')
 v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
 # print(Mstar(G, v_I, v_F))
-
 cProfile.run('Mstar(G, v_I, v_F)')
