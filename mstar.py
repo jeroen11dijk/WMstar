@@ -22,7 +22,6 @@ def Mstar(graph, v_I, v_F):
                 v_k = configurations[v_k][3]
             return res[::-1], configurations[v_F][0]
         if next(phi(v_k), None) is None:
-            print("HERE")
             V_k = get_limited_neighbours(v_k, v_F, configurations, graph, policy)
             for v_l in V_k:
                 configurations[v_l][1].update(phi(v_l))
@@ -85,7 +84,7 @@ def get_edge_weight(v_k, v_l, graph):
             egde_data = graph.get_edge_data(v_k[i], v_l[i])
             cost += egde_data.get('weight') if egde_data.get('weight') is not None else 1
         else:
-            cost += 1
+            cost += 0.5
     return cost
 
 
@@ -121,13 +120,14 @@ G.add_edge('c', 'e', weight=0.7)
 G.add_edge('c', 'f', weight=0.9)
 G.add_edge('a', 'd', weight=0.3)
 G.add_edge('b', 'f', weight=0.2)
-G.add_edge('d', 'f', weight=0.4)
+G.add_edge('g', 'e', weight=0.7)
+G.add_edge('g', 'a', weight=0.5)
+G.add_edge('c', 'h', weight=0.1)
+G.add_edge('h', 'd', weight=0.6)
 
 nx.draw_networkx(G)
 show()
 
-print(Mstar(G, ('e', 'b', 'a', 'c'), ('b', 'f', 'e', 'a')))
+print(Mstar(G, ('e', 'a', 'b', 'f'), ('b', 'e', 'd', 'g')))
 
 policy = nx.floyd_warshall_predecessor_and_distance(G)
-
-print(policy[1]['a']['a'])
