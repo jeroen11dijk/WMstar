@@ -1,9 +1,19 @@
-import time
 import cProfile
+import heapq
+import itertools
+import time
+from dataclasses import dataclass
+
 import networkx as nx
 from matplotlib.pyplot import show
-import itertools
-import heapq
+
+
+@dataclass
+class ConfigurationInfo:
+    cost: float
+    collision_set: set
+    back_set: []
+    back_ptr: ()
 
 
 def Mstar(graph, v_I, v_F):
@@ -11,8 +21,8 @@ def Mstar(graph, v_I, v_F):
     # List = [cost, collision set, back_set, back_ptr]
     configurations = {}
     policy = []
-    for i in range(len(v_F)):
-        policy.append(nx.dijkstra_predecessor_and_distance(G, v_F[i]))
+    for target in v_F:
+        policy.append(nx.dijkstra_predecessor_and_distance(G, target))
     configurations[v_I] = [0, set(), [], None]
     open = []
     heapq.heappush(open, (configurations[v_I][0] + heuristic_configuration(v_I, policy), v_I))
@@ -24,14 +34,14 @@ def Mstar(graph, v_I, v_F):
                 res.append(configurations[v_k][3])
                 v_k = configurations[v_k][3]
             return res[::-1], configurations[v_F][0]
-        if next(phi(v_k), None) is None:
+        if next(phi(v_l), None) is None:
             V_k = get_limited_neighbours(v_k, configurations, graph, policy)
             for v_l in V_k:
                 configurations[v_l][1].update(phi(v_l))
                 configurations[v_l][2].append(v_k)
                 backprop(v_k, configurations[v_l][1], open, configurations, policy)
                 f = get_edge_weight(v_k, v_l, graph)
-                if next(phi(v_k), None) is None and configurations[v_k][0] + f < configurations[v_l][0]:
+                if next(phi(v_l), None) is None and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
                     heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policy), v_l))
@@ -82,14 +92,7 @@ def backprop(v_k, C_l, open, configurations, policy):
 
 
 def get_edge_weight(v_k, v_l, graph):
-    cost = 0
-    for i in range(len(v_k)):
-        if v_k[i] != v_l[i]:
-            egde_data = graph.get_edge_data(v_k[i], v_l[i])
-            cost += egde_data.get('weight') if egde_data.get('weight') is not None else 1
-        else:
-            cost += 0
-    return cost
+    return sum(graph.get_edge_data(k, l).get('weight', 1) for k, l in zip(v_k, v_l) if k != l)
 
 
 # Check for collisions
@@ -106,12 +109,9 @@ def phi(v_k):
     return (i for i, val in enumerate(v_k) if val in double)
 
 
+# Credit to Hytak
 def heuristic_configuration(v_k, policy):
-    cost = 0
-    for i in range(len(v_k)):
-        source = v_k[i]
-        cost += policy[i][1][source]
-    return cost
+    return sum(policy[i][1][v_k[i]] for i in range(len(v_k)))
 
 
 G = nx.Graph()
@@ -145,10 +145,10 @@ G.add_edge('o', 'b', weight=0.1)
 G.add_edge('o', 'k', weight=0.2)
 G.add_edge('o', 'n', weight=0.9)
 
-nx.draw_networkx(G)
-show()
-v_I = ('j', 'm', 'b', 'a', 'c')
-v_F = ('l', 'b', 'h', 'j', 'g')
+# nx.draw_networkx(G)
+# show()
+v_I = ('j', 'm', 'b', 'a', 'c', 'f')
+v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
 # print(Mstar(G, v_I, v_F))
 
