@@ -3,6 +3,7 @@ import cProfile
 import networkx as nx
 from matplotlib.pyplot import show
 import itertools
+import heapq
 
 
 def Mstar(graph, v_I, v_F):
@@ -13,10 +14,10 @@ def Mstar(graph, v_I, v_F):
     for i in range(len(v_F)):
         policy.append(nx.dijkstra_predecessor_and_distance(G, v_F[i]))
     configurations[v_I] = [0, set(), [], None]
-    open = [v_I]
+    open = []
+    heapq.heappush(open, (configurations[v_I][0] + heuristic_configuration(v_I, policy), v_I))
     while len(open) > 0:
-        v_k = min(open, key=lambda x: configurations[x][0] + heuristic_configuration(x, policy))
-        open.remove(v_k)
+        v_k = heapq.heappop(open)[1]
         if v_k == v_F:
             res = [v_F]
             while configurations[v_k][3] is not None:
@@ -28,12 +29,12 @@ def Mstar(graph, v_I, v_F):
             for v_l in V_k:
                 configurations[v_l][1].update(phi(v_l))
                 configurations[v_l][2].append(v_k)
-                backprop(v_k, configurations[v_l][1], open, configurations)
+                backprop(v_k, configurations[v_l][1], open, configurations, policy)
                 f = get_edge_weight(v_k, v_l, graph)
                 if next(phi(v_k), None) is None and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
-                    open.append(v_l)
+                    heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policy), v_l))
     return "No path exists, or I am a retard"
 
 
@@ -70,14 +71,14 @@ def get_limited_neighbours(v_k, configurations, graph, policy):
     return V_k
 
 
-def backprop(v_k, C_l, open, configurations):
+def backprop(v_k, C_l, open, configurations, policy):
     C_k = configurations[v_k][1]
     if not C_l.issubset(C_k):
         C_k.update(C_l)
-        if v_k not in open:
-            open.append(v_k)
+        if v_k not in [k for v, k in open]:
+            heapq.heappush(open, (configurations[v_k][0] + heuristic_configuration(v_k, policy), v_k))
         for v_m in configurations[v_k][2]:
-            backprop(v_m, configurations[v_k][1], open, configurations)
+            backprop(v_m, configurations[v_k][1], open, configurations, policy)
 
 
 def get_edge_weight(v_k, v_l, graph):
@@ -126,9 +127,15 @@ G.add_edge('g', 'e', weight=0.7)
 G.add_edge('g', 'a', weight=0.5)
 G.add_edge('c', 'h', weight=0.1)
 G.add_edge('h', 'd', weight=0.6)
+G.add_edge('i', 'a', weight=0.3)
+G.add_edge('i', 'c', weight=0.9)
+G.add_edge('j', 'c', weight=0.1)
+G.add_edge('h', 'k', weight=0.6)
+G.add_edge('a', 'k', weight=0.7)
+G.add_edge('b', 'h', weight=0.4)
 
-nx.draw_networkx(G)
-show()
+# nx.draw_networkx(G)
+# show()
 
 # print(Mstar(G, ('e', 'a', 'b', 'f'), ('b', 'e', 'd', 'g')))
 v_I = ('e', 'a', 'b', 'f')
