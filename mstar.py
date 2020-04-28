@@ -21,14 +21,15 @@ def Mstar(graph, v_I, v_F):
                 res.append(configurations[v_k][3])
                 v_k = configurations[v_k][3]
             return res[::-1], configurations[v_F][0]
-        if len(phi(v_k)) == 0:
+        if next(phi(v_k), None) is None:
+            print("HERE")
             V_k = get_limited_neighbours(v_k, v_F, configurations, graph, policy)
             for v_l in V_k:
                 configurations[v_l][1].update(phi(v_l))
                 configurations[v_l][2].append(v_k)
                 backprop(v_k, configurations[v_l][1], open, configurations)
                 f = get_edge_weight(v_k, v_l, graph)
-                if len(phi(v_l)) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
+                if next(phi(v_k), None) is None and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
                     open.append(v_l)
@@ -89,14 +90,17 @@ def get_edge_weight(v_k, v_l, graph):
 
 
 # Check for collisions
+# Credit to Hytak
 def phi(v_k):
-    observed = {}
+    seen = set()
+    double = list()
     for i, val in enumerate(v_k):
-        if val in observed:
-            observed[val].append(i)
+        if val in seen:
+            double.append(val)
         else:
-            observed[val] = [i]
-    return [item for sublist in (val for val in observed.values() if len(val) - 1) for item in sublist]
+            seen.add(val)
+    double = set(double)
+    return (i for i, val in enumerate(v_k) if val in double)
 
 
 def heuristic_configuration(v_k, v_F, policy):
