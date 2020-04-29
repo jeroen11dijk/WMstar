@@ -1,21 +1,12 @@
 import cProfile
 import heapq
 import itertools
-import time
 from dataclasses import dataclass
 
 import networkx as nx
-from matplotlib.pyplot import show
-
-@dataclass
-class ConfigurationInfo:
-    cost: float
-    collision_set: set
-    back_set: []
-    back_ptr: ()
 
 
-def Mstar(graph, v_I, v_F):
+def Mstar(graph, v_I, v_W, v_F):
     # Dictionary for every configuration
     # List = [cost, collision set, back_set, back_ptr]
     configurations = {}
@@ -25,6 +16,8 @@ def Mstar(graph, v_I, v_F):
         policy.append(nx.dijkstra_predecessor_and_distance(G, target))
     edge_weights = {}
     for node in graph:
+        # The cost for waiting
+        edge_weights[(node, node)] = 0
         for nbr in graph[node]:
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = [0, set(), [], None]
@@ -104,7 +97,7 @@ def backprop(v_k, C_l, open, configurations, policy):
 
 
 def get_edge_weight(v_k, v_l, edge_weights):
-    return sum(edge_weights[(k, l)] for k, l in zip(v_k, v_l) if k != l)
+    return sum(edge_weights[(k, l)] for k, l in zip(v_k, v_l))
 
 
 # Check for collisions
@@ -160,7 +153,8 @@ G.add_edge('o', 'n', weight=0.9)
 # nx.draw_networkx(G)
 # show()
 v_I = ('j', 'm', 'b', 'a', 'c', 'f')
+v_W = []
 v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
-# print(Mstar(G, v_I, v_F))
-cProfile.run('Mstar(G, v_I, v_F)')
+# print(Mstar(G, v_I, v_W, v_F))
+cProfile.run('Mstar(G, v_I, v_W, v_F)')
