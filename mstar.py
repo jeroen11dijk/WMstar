@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import networkx as nx
 from matplotlib.pyplot import show
 
-
 @dataclass
 class ConfigurationInfo:
     cost: float
@@ -24,6 +23,10 @@ def Mstar(graph, v_I, v_F):
     policy = []
     for target in v_F:
         policy.append(nx.dijkstra_predecessor_and_distance(G, target))
+    edge_weights = {}
+    for node in graph:
+        for nbr in graph[node]:
+            edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = [0, set(), [], None]
     open = []
     heapq.heappush(open, (configurations[v_I][0] + heuristic_configuration(v_I, policy), v_I))
@@ -49,7 +52,7 @@ def Mstar(graph, v_I, v_F):
                 configurations[v_l][1].update(v_l_collisions)
                 configurations[v_l][2].append(v_k)
                 backprop(v_k, configurations[v_l][1], open, configurations, policy)
-                f = get_edge_weight(v_k, v_l, graph)
+                f = get_edge_weight(v_k, v_l, edge_weights)
                 if len(v_l_collisions) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
@@ -100,8 +103,8 @@ def backprop(v_k, C_l, open, configurations, policy):
             backprop(v_m, configurations[v_k][1], open, configurations, policy)
 
 
-def get_edge_weight(v_k, v_l, graph):
-    return sum(graph.get_edge_data(k, l).get('weight', 1) for k, l in zip(v_k, v_l) if k != l)
+def get_edge_weight(v_k, v_l, edge_weights):
+    return sum(edge_weights[(k, l)] for k, l in zip(v_k, v_l) if k != l)
 
 
 # Check for collisions
