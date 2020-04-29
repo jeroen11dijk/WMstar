@@ -20,6 +20,7 @@ def Mstar(graph, v_I, v_F):
     # Dictionary for every configuration
     # List = [cost, collision set, back_set, back_ptr]
     configurations = {}
+    phi_dictionary = {}
     policy = []
     for target in v_F:
         policy.append(nx.dijkstra_predecessor_and_distance(G, target))
@@ -34,15 +35,22 @@ def Mstar(graph, v_I, v_F):
                 res.append(configurations[v_k][3])
                 v_k = configurations[v_k][3]
             return res[::-1], configurations[v_F][0]
-        if len(phi(v_k)) == 0:
+        v_k_collisions = phi_dictionary.get(v_k, None)
+        if v_k_collisions is None:
+            v_k_collisions = phi(v_k)
+            phi_dictionary[v_k] = v_k_collisions
+        if len(v_k_collisions) == 0:
             V_k = get_limited_neighbours(v_k, configurations, graph, policy)
             for v_l in V_k:
-                collisions = phi(v_l)
-                configurations[v_l][1].update(collisions)
+                v_l_collisions = phi_dictionary.get(v_l, None)
+                if v_l_collisions is None:
+                    v_l_collisions = phi(v_l)
+                    phi_dictionary[v_l] = v_l_collisions
+                configurations[v_l][1].update(v_l_collisions)
                 configurations[v_l][2].append(v_k)
                 backprop(v_k, configurations[v_l][1], open, configurations, policy)
                 f = get_edge_weight(v_k, v_l, graph)
-                if len(collisions) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
+                if len(v_l_collisions) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
                     heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policy), v_l))
