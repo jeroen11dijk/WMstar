@@ -11,9 +11,13 @@ def Mstar(graph, v_I, v_W, v_F):
     # List = [cost, collision set, back_set, back_ptr]
     configurations = {}
     phi_dictionary = {}
-    policy = []
-    for target in v_F:
-        policy.append(nx.dijkstra_predecessor_and_distance(G, target))
+    policies = []
+    for i in range(len(v_I)):
+        policy = []
+        for waypoint in v_W[i]:
+            policy.append(nx.dijkstra_predecessor_and_distance(G, waypoint))
+        policy.append(nx.dijkstra_predecessor_and_distance(G, v_F[i]))
+        policies.append(policy)
     edge_weights = {}
     for node in graph:
         # The cost for waiting
@@ -22,7 +26,7 @@ def Mstar(graph, v_I, v_W, v_F):
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = [0, set(), [], None]
     open = []
-    heapq.heappush(open, (configurations[v_I][0] + heuristic_configuration(v_I, policy), v_I))
+    heapq.heappush(open, (configurations[v_I][0] + heuristic_configuration(v_I, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
         if v_k == v_F:
@@ -36,7 +40,7 @@ def Mstar(graph, v_I, v_W, v_F):
             v_k_collisions = phi(v_k)
             phi_dictionary[v_k] = v_k_collisions
         if len(v_k_collisions) == 0:
-            V_k = get_limited_neighbours(v_k, configurations, graph, policy)
+            V_k = get_limited_neighbours(v_k, configurations, graph, policies)
             for v_l in V_k:
                 v_l_collisions = phi_dictionary.get(v_l, None)
                 if v_l_collisions is None:
@@ -44,12 +48,12 @@ def Mstar(graph, v_I, v_W, v_F):
                     phi_dictionary[v_l] = v_l_collisions
                 configurations[v_l][1].update(v_l_collisions)
                 configurations[v_l][2].append(v_k)
-                backprop(v_k, configurations[v_l][1], open, configurations, policy)
+                backprop(v_k, configurations[v_l][1], open, configurations, policies)
                 f = get_edge_weight(v_k, v_l, edge_weights)
                 if len(v_l_collisions) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
                     configurations[v_l][0] = configurations[v_k][0] + f
                     configurations[v_l][3] = v_k
-                    heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policy), v_l))
+                    heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policies), v_l))
     return "No path exists, or I am a retard"
 
 
@@ -153,8 +157,8 @@ G.add_edge('o', 'n', weight=0.9)
 # nx.draw_networkx(G)
 # show()
 v_I = ('j', 'm', 'b', 'a', 'c', 'f')
-v_W = []
+v_W = ('a', 'g', 'c', 'k', 'h', 'n')
 v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
-# print(Mstar(G, v_I, v_W, v_F))
-cProfile.run('Mstar(G, v_I, v_W, v_F)')
+print(Mstar(G, v_I, v_W, v_F))
+# cProfile.run('Mstar(G, v_I, v_F)')
