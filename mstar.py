@@ -1,9 +1,15 @@
-import cProfile
 import heapq
 import itertools
-from dataclasses import dataclass
 
 import networkx as nx
+
+
+class Config:
+    def __init__(self):
+        self.cost = 0
+        self.collisions = set()
+        self.back_set = []
+        self.back_ptr = None
 
 
 def Mstar(graph, v_I, v_W, v_F):
@@ -15,8 +21,8 @@ def Mstar(graph, v_I, v_W, v_F):
     for i in range(len(v_I)):
         policy = []
         for waypoint in v_W[i]:
-            policy.append(nx.dijkstra_predecessor_and_distance(G, waypoint))
-        policy.append(nx.dijkstra_predecessor_and_distance(G, v_F[i]))
+            policy.append(nx.dijkstra_predecessor_and_distance(graph, waypoint))
+        policy.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))
         policies.append(policy)
     edge_weights = {}
     for node in graph:
@@ -24,17 +30,17 @@ def Mstar(graph, v_I, v_W, v_F):
         edge_weights[(node, node)] = 0
         for nbr in graph[node]:
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
-    configurations[v_I] = [0, set(), [], None]
+    configurations[v_I] = Config()
     open = []
-    heapq.heappush(open, (configurations[v_I][0] + heuristic_configuration(v_I, policies), v_I))
+    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
         if v_k == v_F:
             res = [v_F]
-            while configurations[v_k][3] is not None:
-                res.append(configurations[v_k][3])
-                v_k = configurations[v_k][3]
-            return res[::-1], configurations[v_F][0]
+            while configurations[v_k].back_ptr is not None:
+                res.append(configurations[v_k].back_ptr)
+                v_k = configurations[v_k].back_ptr
+            return res[::-1], configurations[v_F].cost
         v_k_collisions = phi_dictionary.get(v_k, None)
         if v_k_collisions is None:
             v_k_collisions = phi(v_k)
@@ -46,14 +52,14 @@ def Mstar(graph, v_I, v_W, v_F):
                 if v_l_collisions is None:
                     v_l_collisions = phi(v_l)
                     phi_dictionary[v_l] = v_l_collisions
-                configurations[v_l][1].update(v_l_collisions)
-                configurations[v_l][2].append(v_k)
-                backprop(v_k, configurations[v_l][1], open, configurations, policies)
+                configurations[v_l].collisions.update(v_l_collisions)
+                configurations[v_l].back_set.append(v_k)
+                backprop(v_k, configurations[v_l].collisions, open, configurations, policies)
                 f = get_edge_weight(v_k, v_l, edge_weights)
-                if len(v_l_collisions) == 0 and configurations[v_k][0] + f < configurations[v_l][0]:
-                    configurations[v_l][0] = configurations[v_k][0] + f
-                    configurations[v_l][3] = v_k
-                    heapq.heappush(open, (configurations[v_l][0] + heuristic_configuration(v_l, policies), v_l))
+                if len(v_l_collisions) == 0 and configurations[v_k].cost + f < configurations[v_l].cost:
+                    configurations[v_l].cost = configurations[v_k].cost + f
+                    configurations[v_l].back_ptr = v_k
+                    heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, policies), v_l))
     return "No path exists, or I am a retard"
 
 
@@ -63,14 +69,15 @@ def get_limited_neighbours(v_k, configurations, graph, policy):
     for i in range(len(v_k)):
         vi_k = v_k[i]
         options_i = []
-        if i in configurations[v_k][1]:
+        if i in configurations[v_k].collisions:
             # ADD all the neighbours
             options_i.append(vi_k)
             for nbr in graph[vi_k]:
                 options_i.append(nbr)
         else:
             source = v_k[i]
-            successors = policy[i][0][source]
+            # TODO the 0 indicates the waypoint which is now the target since there arent any xD
+            successors = policy[i][0][0][source]
             if len(successors) == 0:
                 options_i.append(source)
             else:
@@ -80,23 +87,23 @@ def get_limited_neighbours(v_k, configurations, graph, policy):
     if len(options) == 1:
         option = options[0][0]
         if option not in configurations:
-            configurations[option] = [float('inf'), set(), [], None]
+            configurations[option] = Config()
         V_k.append(options[0][0])
         return V_k
     for element in itertools.product(*options):
         if element not in configurations:
-            configurations[element] = [float('inf'), set(), [], None]
+            configurations[element] = Config()
         V_k.append(element)
     return V_k
 
 
 def backprop(v_k, C_l, open, configurations, policy):
-    C_k = configurations[v_k][1]
+    C_k = configurations[v_k].collisions
     if not C_l.issubset(C_k):
         C_k.update(C_l)
         if v_k not in [k for v, k in open]:
-            heapq.heappush(open, (configurations[v_k][0] + heuristic_configuration(v_k, policy), v_k))
-        for v_m in configurations[v_k][2]:
+            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, policy), v_k))
+        for v_m in configurations[v_k].back_set:
             backprop(v_m, configurations[v_k][1], open, configurations, policy)
 
 
@@ -119,46 +126,6 @@ def phi(v_k):
 
 
 # Credit to Hytak
-def heuristic_configuration(v_k, policy):
-    return sum(policy[i][1][v_k[i]] for i in range(len(v_k)))
-
-
-G = nx.Graph()
-
-G.add_edge('a', 'b')
-G.add_edge('a', 'c', weight=0.4)
-G.add_edge('c', 'd', weight=0.1)
-G.add_edge('c', 'e', weight=0.7)
-G.add_edge('c', 'f', weight=0.9)
-G.add_edge('a', 'd', weight=0.3)
-G.add_edge('b', 'f', weight=0.2)
-G.add_edge('g', 'e', weight=0.7)
-G.add_edge('g', 'a', weight=0.5)
-G.add_edge('c', 'h', weight=0.1)
-G.add_edge('h', 'd', weight=0.6)
-G.add_edge('i', 'a', weight=0.3)
-G.add_edge('i', 'c', weight=0.9)
-G.add_edge('j', 'c', weight=0.1)
-G.add_edge('h', 'k', weight=0.6)
-G.add_edge('a', 'k', weight=0.7)
-G.add_edge('b', 'h', weight=0.4)
-G.add_edge('l', 'a', weight=0.1)
-G.add_edge('l', 'h', weight=0.3)
-G.add_edge('m', 'c', weight=0.8)
-G.add_edge('m', 'f', weight=0.3)
-G.add_edge('n', 'g', weight=0.7)
-G.add_edge('n', 'h', weight=0.9)
-G.add_edge('n', 'a', weight=0.5)
-G.add_edge('o', 'a', weight=0.3)
-G.add_edge('o', 'b', weight=0.1)
-G.add_edge('o', 'k', weight=0.2)
-G.add_edge('o', 'n', weight=0.9)
-
-# nx.draw_networkx(G)
-# show()
-v_I = ('j', 'm', 'b', 'a', 'c', 'f')
-v_W = ('a', 'g', 'c', 'k', 'h', 'n')
-v_F = ('l', 'b', 'h', 'j', 'g', 'o')
-
-print(Mstar(G, v_I, v_W, v_F))
-# cProfile.run('Mstar(G, v_I, v_F)')
+def heuristic_configuration(v_k, policies):
+    # TODO the 0 indicates the waypoint which is now the target since there arent any xD
+    return sum(policies[i][0][1][v_k[i]] for i in range(len(v_k)))

@@ -1,6 +1,8 @@
 import networkx as nx
 from matplotlib.pyplot import show, axis
 
+from mstar import Config
+
 G = nx.grid_2d_graph(4, 4)
 
 v_I = ((0, 0), (0, 1))
