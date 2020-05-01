@@ -6,7 +6,7 @@ import networkx as nx
 
 class Config:
     def __init__(self):
-        self.cost = 0
+        self.cost = float('inf')
         self.collisions = set()
         self.back_set = []
         self.back_ptr = None
@@ -31,6 +31,7 @@ def Mstar(graph, v_I, v_W, v_F):
         for nbr in graph[node]:
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = Config()
+    configurations[v_I].cost = 0
     open = []
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, policies), v_I))
     while len(open) > 0:
@@ -104,7 +105,7 @@ def backprop(v_k, C_l, open, configurations, policy):
         if v_k not in [k for v, k in open]:
             heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, policy), v_k))
         for v_m in configurations[v_k].back_set:
-            backprop(v_m, configurations[v_k][1], open, configurations, policy)
+            backprop(v_m, configurations[v_k].collisions, open, configurations, policy)
 
 
 def get_edge_weight(v_k, v_l, edge_weights):

@@ -40,5 +40,5 @@ v_I = ('j', 'm', 'b', 'a', 'c', 'f')
 v_W = ((), (), (), (), (), ())
 v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
-print(Mstar(G, v_I, v_W, v_F))
-# cProfile.run('Mstar(G, v_I, v_W, v_F)')
+# print(Mstar(G, v_I, v_W, v_F))
+cProfile.run('Mstar(G, v_I, v_W, v_F)')
