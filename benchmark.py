@@ -17,14 +17,14 @@ def solve(problem):
     for i in range(len(problem.starts)):
         path = []
         for t_config in configs:
-            path.append(list(t_config))
+            path.append(list(t_config[i]))
         res.append(path)
     return res
 
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 6, "M*", "Version 1 (Without inversing)", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 6, "M*", "Version 1.01 (Without inversing)", False)
 
 for problem in benchmarker:
     problem.add_solution(solve(problem))
 
-# benchmarker.submit()
+benchmarker.submit()
