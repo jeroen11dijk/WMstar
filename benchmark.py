@@ -29,7 +29,7 @@ def solve(problem):
     return res
 
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 3, "M*", "Version 0.1 for 1 waypoint", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 3, "M*", "Version 0.11 for 1 waypoint", True)
 
 
 for problem in benchmarker:
