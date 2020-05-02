@@ -40,9 +40,8 @@ def Mstar(graph, v_I, v_W, v_F):
     configurations[v_I] = Config(targets)
     configurations[v_I].cost = 0
     open = []
-    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, configurations, policies), v_I))
+    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
     while len(open) > 0:
-        print(open)
         v_k = heapq.heappop(open)[1]
         if v_k == v_F:
             res = [v_F]
@@ -66,12 +65,12 @@ def Mstar(graph, v_I, v_W, v_F):
                     phi_dictionary[v_l] = v_l_collisions
                 configurations[v_l].collisions.update(v_l_collisions)
                 configurations[v_l].back_set.append(v_k)
-                backprop(v_k, configurations[v_l].collisions, open, configurations, policies)
+                backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, policies)
                 f = get_edge_weight(v_k, v_l, edge_weights)
                 if len(v_l_collisions) == 0 and configurations[v_k].cost + f < configurations[v_l].cost:
                     configurations[v_l].cost = configurations[v_k].cost + f
                     configurations[v_l].back_ptr = v_k
-                    heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, configurations, policies), v_l))
+                    heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
     return "No path exists, or I am a retard"
 
 
@@ -110,14 +109,14 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
     return V_k
 
 
-def backprop(v_k, C_l, open, configurations, policy):
+def backprop(v_k, v_W, C_l, open, configurations, policy):
     C_k = configurations[v_k].collisions
     if not C_l.issubset(C_k):
         C_k.update(C_l)
         if v_k not in [k for v, k in open]:
-            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, configurations, policy), v_k))
+            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, policy), v_k))
         for v_m in configurations[v_k].back_set:
-            backprop(v_m, configurations[v_k].collisions, open, configurations, policy)
+            backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, policy)
 
 
 def get_edge_weight(v_k, v_l, edge_weights):
@@ -139,11 +138,17 @@ def phi(v_k):
 
 
 # Credit to Hytak
-def heuristic_configuration(v_k, configurations, policies):
+def heuristic_configuration(v_k, v_W, configurations, policies):
     # return sum(policies[configurations[v_k].targets[i]][i][1][v_k[i]] for i in range(len(v_k)))
     cost = 0
     for i in range(len(v_k)):
         target = configurations[v_k].targets[i]
-        policy_costs = policies[target][i][1]
-        cost += policy_costs[v_k[i]]
+        if target == 0:
+            policy_costs = policies[0][i][1]
+            cost += policy_costs[v_k[i]]
+            policy_costs = policies[1][i][1]
+            cost += policy_costs[v_W[i]]
+        else:
+            policy_costs = policies[1][i][1]
+            cost += policy_costs[v_k[i]]
     return cost

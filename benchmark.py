@@ -34,5 +34,6 @@ benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 3, "M*", "Version 0.1 for 1 w
 
 for problem in benchmarker:
     print(problem.waypoints)
-    print(solve(problem))
-    problem.add_solution(solve(problem))
+    solution = solve(problem)
+    print(solution)
+    problem.add_solution(solution)
