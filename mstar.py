@@ -21,8 +21,8 @@ def Mstar(graph, v_I, v_W, v_F):
     waypoint_policies = []
     target_policies = []
     for i in range(len(v_I)):
-        if tuple(v_W[i][0]) in graph:
-            waypoint_policies.append(nx.dijkstra_predecessor_and_distance(graph, tuple(v_W[i][0])))
+        if v_W[i] in graph:
+            waypoint_policies.append(nx.dijkstra_predecessor_and_distance(graph, v_W[i]))
         else:
             waypoint_policies.append(None)
         target_policies.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))

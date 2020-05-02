@@ -13,7 +13,12 @@ def solve(problem):
                 graph.remove_node((j, i))
     # Create V_I and v_F
     v_I = tuple(tuple(start) for start in problem.starts)
-    v_W = tuple(tuple(waypoint) for waypoint in problem.waypoints)
+    v_W = []
+    for waypoint in problem.waypoints:
+        if len(waypoint) > 0:
+            v_W.append(tuple(tuple(waypoint[0])))
+        else:
+            v_W.append(())
     v_F = tuple(tuple(target) for target in problem.goals)
     # Run the algorithm
     configs = Mstar(graph, v_I, v_W, v_F)[0]
