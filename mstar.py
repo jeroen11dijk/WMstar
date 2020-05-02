@@ -42,6 +42,7 @@ def Mstar(graph, v_I, v_W, v_F):
     open = []
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, configurations, policies), v_I))
     while len(open) > 0:
+        print(open)
         v_k = heapq.heappop(open)[1]
         if v_k == v_F:
             res = [v_F]
