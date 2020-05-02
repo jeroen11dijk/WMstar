@@ -5,35 +5,42 @@ import networkx as nx
 
 
 class Config:
-    def __init__(self):
+    def __init__(self, targets):
         self.cost = float('inf')
         self.collisions = set()
         self.back_set = []
+        self.targets = targets
         self.back_ptr = None
 
 
 def Mstar(graph, v_I, v_W, v_F):
     # Dictionary for every configuration
-    # List = [cost, collision set, back_set, back_ptr]
+    n_agents = len(v_I)
     configurations = {}
     phi_dictionary = {}
-    policies = []
+    waypoint_policies = []
+    target_policies = []
     for i in range(len(v_I)):
-        policy = []
-        for waypoint in v_W[i]:
-            policy.append(nx.dijkstra_predecessor_and_distance(graph, waypoint))
-        policy.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))
-        policies.append(policy)
+        if tuple(v_W[i][0]) in graph:
+            waypoint_policies.append(nx.dijkstra_predecessor_and_distance(graph, tuple(v_W[i][0])))
+        else:
+            waypoint_policies.append(None)
+        target_policies.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))
+    policies = [waypoint_policies, target_policies]
     edge_weights = {}
     for node in graph:
         # The cost for waiting
         edge_weights[(node, node)] = 0
         for nbr in graph[node]:
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
-    configurations[v_I] = Config()
+    targets = [0] * n_agents
+    for i in range(n_agents):
+        if waypoint_policies[i] is None:
+            targets[i] = 1
+    configurations[v_I] = Config(targets)
     configurations[v_I].cost = 0
     open = []
-    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, policies), v_I))
+    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, configurations, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
         if v_k == v_F:
@@ -42,6 +49,9 @@ def Mstar(graph, v_I, v_W, v_F):
                 res.append(configurations[v_k].back_ptr)
                 v_k = configurations[v_k].back_ptr
             return res[::-1], configurations[v_F].cost
+        for i in range(n_agents):
+            if v_k[i] == v_W[i]:
+                configurations[v_k].targets[i] = 1
         v_k_collisions = phi_dictionary.get(v_k, None)
         if v_k_collisions is None:
             v_k_collisions = phi(v_k)
@@ -60,11 +70,11 @@ def Mstar(graph, v_I, v_W, v_F):
                 if len(v_l_collisions) == 0 and configurations[v_k].cost + f < configurations[v_l].cost:
                     configurations[v_l].cost = configurations[v_k].cost + f
                     configurations[v_l].back_ptr = v_k
-                    heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, policies), v_l))
+                    heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, configurations, policies), v_l))
     return "No path exists, or I am a retard"
 
 
-def get_limited_neighbours(v_k, configurations, graph, policy):
+def get_limited_neighbours(v_k, configurations, graph, policies):
     V_k = []
     options = []
     for i in range(len(v_k)):
@@ -77,8 +87,9 @@ def get_limited_neighbours(v_k, configurations, graph, policy):
                 options_i.append(nbr)
         else:
             source = v_k[i]
-            # TODO the 0 indicates the waypoint which is now the target since there arent any xD
-            successors = policy[i][0][0][source]
+            target = configurations[v_k].targets[i]
+            policy = policies[target][i][0]
+            successors = policy[v_k[i]]
             if len(successors) == 0:
                 options_i.append(source)
             else:
@@ -88,12 +99,12 @@ def get_limited_neighbours(v_k, configurations, graph, policy):
     if len(options) == 1:
         option = options[0][0]
         if option not in configurations:
-            configurations[option] = Config()
+            configurations[option] = Config(configurations[v_k].targets)
         V_k.append(options[0][0])
         return V_k
     for element in itertools.product(*options):
         if element not in configurations:
-            configurations[element] = Config()
+            configurations[element] = Config(configurations[v_k].targets)
         V_k.append(element)
     return V_k
 
@@ -103,7 +114,7 @@ def backprop(v_k, C_l, open, configurations, policy):
     if not C_l.issubset(C_k):
         C_k.update(C_l)
         if v_k not in [k for v, k in open]:
-            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, policy), v_k))
+            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, configurations, policy), v_k))
         for v_m in configurations[v_k].back_set:
             backprop(v_m, configurations[v_k].collisions, open, configurations, policy)
 
@@ -127,6 +138,11 @@ def phi(v_k):
 
 
 # Credit to Hytak
-def heuristic_configuration(v_k, policies):
-    # TODO the 0 indicates the waypoint which is now the target since there arent any xD
-    return sum(policies[i][0][1][v_k[i]] for i in range(len(v_k)))
+def heuristic_configuration(v_k, configurations, policies):
+    # return sum(policies[configurations[v_k].targets[i]][i][1][v_k[i]] for i in range(len(v_k)))
+    cost = 0
+    for i in range(len(v_k)):
+        target = configurations[v_k].targets[i]
+        policy_costs = policies[target][i][1]
+        cost += policy_costs[v_k[i]]
+    return cost

@@ -24,9 +24,10 @@ def solve(problem):
     return res
 
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 6, "M*", "Version 1.01 (Without inversing)", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 3, "M*", "Version 0.1 for 1 waypoint", True)
+
 
 for problem in benchmarker:
+    print(problem.waypoints)
+    print(solve(problem))
     problem.add_solution(solve(problem))
-
-# benchmarker.submit()

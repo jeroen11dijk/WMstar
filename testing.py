@@ -32,3 +32,6 @@ G.add_edge('c', 'd', weight=0.1)
 G.add_edge('c', 'e', weight=0.7)
 G.add_edge('c', 'f', weight=0.9)
 G.add_edge('a', 'd', weight=0.3)
+
+a = ['a', 'b']
+print(a[True])
