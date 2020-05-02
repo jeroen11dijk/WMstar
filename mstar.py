@@ -3,6 +3,10 @@ import itertools
 
 import networkx as nx
 
+# TODO fix the main issue
+# It queries an earlier visit config and then copies those targets even though it never visited the waypoint
+# https://mapfw.nl/solutions/view/587
+
 
 class Config:
     def __init__(self, targets):
@@ -11,6 +15,12 @@ class Config:
         self.back_set = []
         self.targets = targets
         self.back_ptr = None
+
+    def __str__(self):
+        return str([self.cost, self.collisions, self.back_set, self.targets, self.back_ptr])
+
+    def __repr__(self):
+        return str([self.cost, self.collisions, self.back_set, self.targets, self.back_ptr])
 
 
 def Mstar(graph, v_I, v_W, v_F):
@@ -43,7 +53,7 @@ def Mstar(graph, v_I, v_W, v_F):
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
-        # print(configurations[v_k].targets)
+        print(v_k, configurations[v_k].targets)
         if v_k == v_F and 0 not in configurations[v_F].targets:
             res = [v_F]
             while configurations[v_k].back_ptr is not None:
