@@ -35,14 +35,14 @@ G.add_edge('o', 'b', weight=0.1)
 G.add_edge('o', 'k', weight=0.2)
 G.add_edge('o', 'n', weight=0.9)
 
-nx.draw_networkx(G)
-show()
+# nx.draw_networkx(G)
+# show()
 v_I = ('j', 'm', 'b', 'a', 'c', 'f')
 v_W = ((), (), (), (), (), ())
 v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
 v_I2 = ('m', 'k', 'j', 'd')
-v_W2 = ('c', 'a', 'l', 'a')
+v_W2 = ('c', 'a', 'l', 'b')
 v_F2 = ('f', 'b', 'j', 'c')
 
 print(Mstar(G, v_I2, v_W2, v_F2))

@@ -43,7 +43,8 @@ def Mstar(graph, v_I, v_W, v_F):
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
-        if v_k == v_F:
+        # print(configurations[v_k].targets)
+        if v_k == v_F and 0 not in configurations[v_F].targets:
             res = [v_F]
             while configurations[v_k].back_ptr is not None:
                 res.append(configurations[v_k].back_ptr)
@@ -69,7 +70,19 @@ def Mstar(graph, v_I, v_W, v_F):
                 f = get_edge_weight(v_k, v_l, edge_weights)
                 if len(v_l_collisions) == 0 and configurations[v_k].cost + f < configurations[v_l].cost:
                     configurations[v_l].cost = configurations[v_k].cost + f
-                    configurations[v_l].back_ptr = v_k
+                    if configurations[v_l].back_ptr is None:
+                        combined_targets = zip(configurations[v_l].targets, configurations[v_k].targets)
+                        configurations[v_l].targets = [max(x) for x in combined_targets]
+                        configurations[v_l].back_ptr = v_k
+                    else:
+                        configurations[v_l].back_ptr = v_k
+                        backtrace = [configurations[v_l].targets]
+                        back_config = v_k
+                        while configurations[back_config].back_ptr is not None:
+                            backtrace.append(configurations[back_config].targets)
+                            back_config = configurations[back_config].back_ptr
+                        combined_targets = zip(*backtrace)
+                        configurations[v_l].targets = [max(x) for x in combined_targets]
                     heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
     return "No path exists, or I am a retard"
 
@@ -99,12 +112,12 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
     if len(options) == 1:
         option = options[0][0]
         if option not in configurations:
-            configurations[option] = Config(configurations[v_k].targets)
+            configurations[option] = Config([0] * len(v_k))
         V_k.append(options[0][0])
         return V_k
     for element in itertools.product(*options):
         if element not in configurations:
-            configurations[element] = Config(configurations[v_k].targets)
+            configurations[element] = Config([0] * len(v_k))
         V_k.append(element)
     return V_k
 
