@@ -53,16 +53,18 @@ def Mstar(graph, v_I, v_W, v_F):
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
-        print(v_k, configurations[v_k].targets)
         if v_k == v_F and 0 not in configurations[v_F].targets:
             res = [v_F]
             while configurations[v_k].back_ptr is not None:
                 res.append(configurations[v_k].back_ptr)
                 v_k = configurations[v_k].back_ptr
             return res[::-1], configurations[v_F].cost
+        back_ptr_targets = configurations[configurations[v_k].back_ptr].targets if configurations[v_k].back_ptr is not None else [0] * n_agents
         for i in range(n_agents):
-            if v_k[i] == v_W[i]:
+            if v_k[i] == v_W[i] or back_ptr_targets[i] == 1 or waypoint_policies[i] is None:
                 configurations[v_k].targets[i] = 1
+            else:
+                configurations[v_k].targets[i] = 0
         v_k_collisions = phi_dictionary.get(v_k, None)
         if v_k_collisions is None:
             v_k_collisions = phi(v_k)
@@ -78,21 +80,15 @@ def Mstar(graph, v_I, v_W, v_F):
                 configurations[v_l].back_set.append(v_k)
                 backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, policies)
                 f = get_edge_weight(v_k, v_l, edge_weights)
-                if len(v_l_collisions) == 0 and configurations[v_k].cost + f < configurations[v_l].cost:
+                if len(v_l_collisions) == 0 and configurations[v_k].cost + f + heuristic_configuration(v_k, v_W, configurations, policies) < configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies):
                     configurations[v_l].cost = configurations[v_k].cost + f
-                    if configurations[v_l].back_ptr is None:
-                        combined_targets = zip(configurations[v_l].targets, configurations[v_k].targets)
-                        configurations[v_l].targets = [max(x) for x in combined_targets]
-                        configurations[v_l].back_ptr = v_k
-                    else:
-                        configurations[v_l].back_ptr = v_k
-                        backtrace = [configurations[v_l].targets]
-                        back_config = v_k
-                        while configurations[back_config].back_ptr is not None:
-                            backtrace.append(configurations[back_config].targets)
-                            back_config = configurations[back_config].back_ptr
-                        combined_targets = zip(*backtrace)
-                        configurations[v_l].targets = [max(x) for x in combined_targets]
+                    configurations[v_l].back_ptr = v_k
+                    v_k_targets = configurations[v_k].targets
+                    for i in range(n_agents):
+                        if v_l[i] == v_W[i] or v_k_targets[i] == 1:
+                            configurations[v_l].targets[i] = 1
+                        else:
+                            configurations[v_l].targets[i] = 0
                     heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
     return "No path exists, or I am a retard"
 
@@ -122,12 +118,20 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
     if len(options) == 1:
         option = options[0][0]
         if option not in configurations:
-            configurations[option] = Config([0] * len(v_k))
+            targets = [0] * len(v_k)
+            for i in range(len(v_k)):
+                if policies[0][i] is None:
+                    targets[i] = 1
+            configurations[option] = Config(targets)
         V_k.append(options[0][0])
         return V_k
     for element in itertools.product(*options):
         if element not in configurations:
-            configurations[element] = Config([0] * len(v_k))
+            targets = [0] * len(v_k)
+            for i in range(len(v_k)):
+                if policies[0][i] is None:
+                    targets[i] = 1
+            configurations[element] = Config(targets)
         V_k.append(element)
     return V_k
 
