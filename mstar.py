@@ -136,14 +136,14 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
     return V_k
 
 
-def backprop(v_k, v_W, C_l, open, configurations, policy):
+def backprop(v_k, v_W, C_l, open, configurations, policies):
     C_k = configurations[v_k].collisions
     if not C_l.issubset(C_k):
         C_k.update(C_l)
         if not any(v_k in configuration for configuration in open):
-            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, policy), v_k))
+            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, policies), v_k))
         for v_m in configurations[v_k].back_set:
-            backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, policy)
+            backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, policies)
 
 
 def get_edge_weight(v_k, v_l, edge_weights):
