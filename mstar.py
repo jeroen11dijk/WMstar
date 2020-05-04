@@ -105,7 +105,7 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
         else:
             source = v_k[i]
             target = configurations[v_k].targets[i]
-            policy = policies[target][i][0]
+            policy = policies[i][target][0]
             successors = policy[v_k[i]]
             if len(successors) == 0:
                 options_i.append(source)
@@ -160,28 +160,15 @@ def heuristic_configuration(v_k, v_W, configurations, policies):
     cost = 0
     for i in range(len(v_k)):
         target = configurations[v_k].targets[i]
-        if target == 0:
-            policy_costs = policies[0][i][1]
-            cost += policy_costs[v_k[i]]
-            policy_costs = policies[1][i][1]
-            cost += policy_costs[v_W[i]]
+        if target == 0 and target == len(policies[i]) - 1:
+            policy_costs_new = policies[i][target][1]
+            cost += policy_costs_new[v_k[i]]
+        elif target == 1 and target == len(policies[i]) - 1:
+            policy_costs_new = policies[i][target][1]
+            cost += policy_costs_new[v_k[i]]
         else:
-            policy_costs = policies[1][i][1]
-            cost += policy_costs[v_k[i]]
-    new_cost = 0
-    for i in range(len(v_k)):
-        new_target = configurations[v_k].targets_new[i]
-        if new_target == 0 and new_target == len(policies_new[i]) - 1:
-            policy_costs_new = policies_new[i][new_target][1]
-            new_cost += policy_costs_new[v_k[i]]
-        elif new_target == 1 and new_target == len(policies_new[i]) - 1:
-            policy_costs_new = policies_new[i][new_target][1]
-            new_cost += policy_costs_new[v_k[i]]
-        else:
-            policy_costs_new = policies_new[i][new_target][1]
-            new_cost += policy_costs_new[v_k[i]]
-            policy_costs_new = policies_new[i][new_target + 1][1]
-            new_cost += policy_costs_new[v_W[i]]
-    if cost != new_cost:
-        print(v_k, cost, new_cost)
+            policy_costs_new = policies[i][target][1]
+            cost += policy_costs_new[v_k[i]]
+            policy_costs_new = policies[i][target + 1][1]
+            cost += policy_costs_new[v_W[i]]
     return cost
