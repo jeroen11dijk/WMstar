@@ -3,18 +3,13 @@ import itertools
 import math
 import networkx as nx
 
-# TODO fix the main issue
-# It queries an earlier visit config and then copies those targets even though it never visited the waypoint
-# https://mapfw.nl/solutions/view/587
-
-
 class Config:
     def __init__(self, targets):
         self.cost = float('inf')
         self.collisions = set()
         self.back_set = []
         self.targets = targets
-        self.back_ptr = None
+        self.back_ptr = []
 
     def __str__(self):
         return str([self.cost, self.collisions, self.back_set, self.targets, self.back_ptr])
@@ -51,14 +46,13 @@ def Mstar(graph, v_I, v_W, v_F):
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
-        print(v_k)
         if v_k == v_F and all(configurations[v_F].targets[i] + 1 == len(policies[i]) for i in range(len(v_F))):
-            res = [v_F]
-            while configurations[v_k].back_ptr is not None:
-                res.append(configurations[v_k].back_ptr)
-                v_k = configurations[v_k].back_ptr
-            return res[::-1], configurations[v_F].cost
-        back_ptr_targets = configurations[configurations[v_k].back_ptr].targets if configurations[v_k].back_ptr is not None else [0] * n_agents
+            res = []
+            for config in configurations[v_F].back_ptr:
+                res.append(config)
+            res.append(v_F)
+            return res, configurations[v_F].cost
+        back_ptr_targets = configurations[configurations[v_k].back_ptr[-1]].targets if len(configurations[v_k].back_ptr) > 0 else [0] * n_agents
         for i in range(n_agents):
             if v_k[i] == v_W[i] or back_ptr_targets[i] == 1:
                 configurations[v_k].targets[i] = 1
@@ -92,7 +86,7 @@ def Mstar(graph, v_I, v_W, v_F):
                 more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(configurations[v_l].targets) < sum(temp_targets)
                 if len(v_l_collisions) == 0 and (new_cost_v_l < old_cost_v_l or more_targets):
                     configurations[v_l].cost = configurations[v_k].cost + f
-                    configurations[v_l].back_ptr = v_k
+                    configurations[v_l].back_ptr = configurations[v_k].back_ptr + [v_k]
                     configurations[v_l].targets = temp_targets
                     heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
     return "No path exists, or I am a retard"
