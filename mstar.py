@@ -47,10 +47,10 @@ def Mstar(graph, v_I, v_W, v_F):
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
         if v_k == v_F and all(configurations[v_F].targets[i] + 1 == len(policies[i]) for i in range(len(v_F))):
+            configurations[v_F].back_ptr.append(v_F)
             res = []
-            for config in configurations[v_F].back_ptr:
-                res.append(config)
-            res.append(v_F)
+            for i in range(n_agents):
+                res.append([list(config[i]) for config in configurations[v_F].back_ptr])
             return res, configurations[v_F].cost
         back_ptr_targets = configurations[configurations[v_k].back_ptr[-1]].targets if len(configurations[v_k].back_ptr) > 0 else [0] * n_agents
         for i in range(n_agents):
