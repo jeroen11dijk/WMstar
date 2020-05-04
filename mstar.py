@@ -203,15 +203,18 @@ def heuristic_configuration(v_k, v_W, configurations, policies, policies_new):
             cost += policy_costs[v_k[i]]
     new_cost = 0
     for i in range(len(v_k)):
-        target = configurations[v_k].targets_new[i]
-        if target == 0 and len(policies_new[i]) > 1:
-            policy_costs = policies_new[i][0][1]
-            new_cost += policy_costs[v_k[i]]
-            policy_costs = policies_new[i][1][1]
-            new_cost += policy_costs[v_W[i]]
+        new_target = configurations[v_k].targets_new[i]
+        if new_target == 0 and new_target == len(policies_new[i]) - 1:
+            policy_costs_new = policies_new[i][new_target][1]
+            new_cost += policy_costs_new[v_k[i]]
+        elif new_target == 1 and new_target == len(policies_new[i]) - 1:
+            policy_costs_new = policies_new[i][new_target][1]
+            new_cost += policy_costs_new[v_k[i]]
         else:
-            policy_costs = policies_new[i][0][1]
-            new_cost += policy_costs[v_k[i]]
+            policy_costs_new = policies_new[i][new_target][1]
+            new_cost += policy_costs_new[v_k[i]]
+            policy_costs_new = policies_new[i][new_target + 1][1]
+            new_cost += policy_costs_new[v_W[i]]
     if cost != new_cost:
-        print("hello there")
+        print(v_k, cost, new_cost)
     return cost
