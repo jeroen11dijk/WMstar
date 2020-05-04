@@ -1,6 +1,6 @@
 import heapq
 import itertools
-
+import math
 import networkx as nx
 
 # TODO fix the main issue
@@ -51,6 +51,7 @@ def Mstar(graph, v_I, v_W, v_F):
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
+        print(v_k)
         if v_k == v_F and all(configurations[v_F].targets[i] + 1 == len(policies[i]) for i in range(len(v_F))):
             res = [v_F]
             while configurations[v_k].back_ptr is not None:
@@ -78,15 +79,21 @@ def Mstar(graph, v_I, v_W, v_F):
                 configurations[v_l].back_set.append(v_k)
                 backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, policies)
                 f = get_edge_weight(v_k, v_l, edge_weights)
-                if len(v_l_collisions) == 0 and configurations[v_k].cost + f + heuristic_configuration(v_k, v_W, configurations, policies) < configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies):
+
+                v_k_targets = configurations[v_k].targets
+                temp_targets = [0] * n_agents
+                for i in range(n_agents):
+                    if v_l[i] == v_W[i] or v_k_targets[i] == 1:
+                        temp_targets[i] = 1
+                    else:
+                        temp_targets[i] = 0
+                new_cost_v_l = configurations[v_k].cost + f + heuristic_configuration(v_l, v_W, configurations, policies, temp_targets)
+                old_cost_v_l = configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies)
+                more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(configurations[v_l].targets) < sum(temp_targets)
+                if len(v_l_collisions) == 0 and (new_cost_v_l < old_cost_v_l or more_targets):
                     configurations[v_l].cost = configurations[v_k].cost + f
                     configurations[v_l].back_ptr = v_k
-                    v_k_targets = configurations[v_k].targets
-                    for i in range(n_agents):
-                        if v_l[i] == v_W[i] or v_k_targets[i] == 1:
-                            configurations[v_l].targets[i] = 1
-                        else:
-                            configurations[v_l].targets[i] = 0
+                    configurations[v_l].targets = temp_targets
                     heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
     return "No path exists, or I am a retard"
 
@@ -154,12 +161,10 @@ def phi(v_k):
     return [i for i, val in enumerate(v_k) if val in double]
 
 
-# Credit to Hytak
-def heuristic_configuration(v_k, v_W, configurations, policies):
-    # return sum(policies[configurations[v_k].targets[i]][i][1][v_k[i]] for i in range(len(v_k)))
+def heuristic_configuration(v_k, v_W, configurations, policies, targets=None):
     cost = 0
     for i in range(len(v_k)):
-        target = configurations[v_k].targets[i]
+        target = configurations[v_k].targets[i] if targets is None else targets[i]
         if target == 0 and target == len(policies[i]) - 1:
             policy_costs_new = policies[i][target][1]
             cost += policy_costs_new[v_k[i]]
