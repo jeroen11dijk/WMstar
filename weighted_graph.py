@@ -1,5 +1,6 @@
 import cProfile
 import networkx as nx
+from matplotlib.pyplot import show
 
 from mstar import Mstar
 
@@ -37,8 +38,17 @@ G.add_edge('o', 'n', weight=0.9)
 # nx.draw_networkx(G)
 # show()
 v_I = ('j', 'm', 'b', 'a', 'c', 'f')
-v_W = []
+v_W = ((), (), (), (), (), ())
 v_F = ('l', 'b', 'h', 'j', 'g', 'o')
 
-# print(Mstar(G, v_I, v_F))
-cProfile.run('Mstar(G, v_I, v_F)')
+v_I2 = ('m', 'k', 'j', 'd')
+v_W2 = ('c', 'a', 'l', 'b')
+v_F2 = ('f', 'b', 'j', 'c')
+
+v_I3 = ('m', 'k')
+v_W3 = ((), 'a')
+v_F3 = ('f', 'b')
+
+print(Mstar(G, v_I3, v_W3, v_F3))
+# cProfile.run('Mstar(G, v_I, v_W, v_F)')
+# cProfile.run('Mstar(G, v_I2, v_W2, v_F2)')

@@ -13,9 +13,15 @@ def solve(problem):
                 graph.remove_node((j, i))
     # Create V_I and v_F
     v_I = tuple(tuple(start) for start in problem.starts)
+    v_W = []
+    for waypoint in problem.waypoints:
+        if len(waypoint) > 0:
+            v_W.append(tuple(tuple(waypoint[0])))
+        else:
+            v_W.append(())
     v_F = tuple(tuple(target) for target in problem.goals)
     # Run the algorithm
-    configs = Mstar(graph, v_I, v_F)[0]
+    configs = Mstar(graph, v_I, v_W, v_F)[0]
     # Convert to the accepted format
     res = []
     for i in range(len(problem.starts)):
@@ -23,9 +29,11 @@ def solve(problem):
     return res
 
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 6, "M*", "Version 1.01 (Without inversing)", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 4, "M*", "Version 0.11 for 1 waypoint", True)
+
 
 for problem in benchmarker:
-    problem.add_solution(solve(problem))
-
-# benchmarker.submit()
+    print(problem.waypoints)
+    solution = solve(problem)
+    print(solution)
+    problem.add_solution(solution)

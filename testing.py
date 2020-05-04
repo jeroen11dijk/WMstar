@@ -1,6 +1,8 @@
 import networkx as nx
 from matplotlib.pyplot import show, axis
 
+from mstar import Config
+
 G = nx.grid_2d_graph(4, 4)
 
 v_I = ((0, 0), (0, 1))
@@ -30,3 +32,11 @@ G.add_edge('c', 'd', weight=0.1)
 G.add_edge('c', 'e', weight=0.7)
 G.add_edge('c', 'f', weight=0.9)
 G.add_edge('a', 'd', weight=0.3)
+
+a = [9, 0, 0]
+print(a[True])
+
+b = [3, 0, 1]
+c = [0, 1, 4]
+print([max(a) for a in (zip(b, c, a))])
+print([max(a) for a in (zip(b, c, a))])
