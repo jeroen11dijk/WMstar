@@ -8,10 +8,11 @@ from networkx import grid_graph
 from mstar import Mstar
 
 
-def test(G, v_I, v_W, v_F, time_budget, min_cost):
+def test(G, v_I, v_W, v_F, weigh_cost, time_budget, min_cost):
     start = time.time()
-    res = Mstar(G, v_I, v_W, v_F)
+    res = Mstar(G, v_I, v_W, v_F, weigh_cost)
     assert time.time() - start < time_budget
+    print(res[1])
     assert res[1] < min_cost or math.isclose(res[1], min_cost)
     paths = res[0]
     for i in range(len(v_I)):
@@ -28,7 +29,7 @@ def benchmark(i, time_budget, min_cost):
     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", i, "M*", "Test", True)
     for problem in benchmarker:
         graph, v_I, v_W, v_F = setup_benchmark(problem)
-        test(graph, v_I, v_W, v_F, time_budget, min_cost)
+        test(graph, v_I, v_W, v_F, 1, time_budget, min_cost)
 
 
 def setup_benchmark(problem):
@@ -93,24 +94,24 @@ def run_all_tests():
     v_W3 = ((), 'a')
     v_F3 = ('f', 'b')
 
-    test(G, v_I1, v_W1, v_F1, 4.2, 3.2)
-    test(G, v_I2, v_W2, v_F2, 0.1, 4.5)
-    test(G, v_I3, v_W3, v_F3, 0.01, 1.2)
+    # test(G, v_I1, v_W1, v_F1, 0, 4.2, 3.2)
+    test(G, v_I2, v_W2, v_F2, 0, 0.1, 4.5)
+    test(G, v_I3, v_W3, v_F3, 0, 0.01, 1.2)
 
-    benchmark(1, 0.02, 26)
+    benchmark(1, 0.02, 50)
     benchmark(2, 0.02, 38)
-    benchmark(3, 0.02, 72)
+    benchmark(3, 0.02, 76)
     benchmark(4, 0.02, 17)
     benchmark(6, 0.02, 20)
 
     print("All tests have passed!")
 
 
-run_all_tests()
+# run_all_tests()
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M*", "Version 1.2", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 4, "M*", "Version 1.2", True)
 for problem in benchmarker:
     graph, v_I, v_W, v_F = setup_benchmark(problem)
-    solution = Mstar(graph, v_I, v_W, v_F)
+    solution = Mstar(graph, v_I, v_W, v_F, 1)
     print(solution)
     problem.add_solution(solution[0])
