@@ -60,15 +60,14 @@ class Mstar:
         while len(self.open) > 0:
             v_k = heapq.heappop(self.open)[1]
             if v_k == self.v_F and all(
-                    configurations[self.v_F].target_indices[i] + 1 == len(self.policies[i]) for i in
+                    configurations[self.v_F].target_indices[i] + 1 == len(self.targets[i]) for i in
                     range(len(self.v_F))):
                 configurations[self.v_F].back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in configurations[self.v_F].back_ptr])
                 return res, configurations[self.v_F].cost
-            v_k_collisions = self.phi(v_k)
-            if len(v_k_collisions) == 0:
+            if len(self.phi(v_k)) == 0:
                 V_k = self.get_limited_neighbours(v_k)
                 for v_l in V_k:
                     v_l_collisions = self.phi(v_l)
@@ -147,6 +146,7 @@ class Mstar:
             for v_m in self.configurations[v_k].back_set:
                 self.backprop(v_m, self.configurations[v_k].collisions)
 
+    @lru_cache(maxsize=None)
     def get_edge_weight(self, v_k, v_l):
         return sum(0 if k == l == m else 1 for k, l, m in zip(v_k, v_l, self.v_F))
 
