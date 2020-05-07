@@ -131,6 +131,7 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
         if element not in configurations:
             configurations[element] = Config([0] * len(v_k))
         V_k.append(element)
+    print(len(V_k))
     return V_k
 
 
