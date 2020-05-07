@@ -164,7 +164,6 @@ class Mstar:
         double = set(double)
         return [i for i, val in enumerate(v_k) if val in double]
 
-    @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices=None):
         cost = 0
         for i in range(self.n_agents):
