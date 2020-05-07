@@ -30,10 +30,10 @@ def Mstar(graph, v_I, v_W, v_F):
         policy_i = []
         distance_i = []
         if v_W[i] in graph:
-            predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[0])
+            predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_W[i])
             policy_i.append(predecessor)
             distance_i.append(distance)
-        predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[0])
+        predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[i])
         policy_i.append(predecessor)
         distance_i.append(distance)
         policies.append(policy_i)
@@ -44,7 +44,6 @@ def Mstar(graph, v_I, v_W, v_F):
     heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, distances), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
-        print(v_k)
         if v_k == v_F and all(configurations[v_F].targets[i] + 1 == len(policies[i]) for i in range(len(v_F))):
             configurations[v_F].back_ptr.append(v_F)
             res = []
@@ -92,7 +91,7 @@ def Mstar(graph, v_I, v_W, v_F):
                     configurations[v_l].targets = temp_targets
                     heapq.heappush(open, (
                     configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, distances), v_l))
-    return "No path exists, or I am a retard"
+    return "No path exists, or I am an idiot"
 
 
 def get_limited_neighbours(v_k, configurations, graph, policies):
