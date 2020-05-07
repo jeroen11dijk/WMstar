@@ -52,14 +52,16 @@ class Mstar:
         self.open = []
         self.configurations[v_I] = Config([0] * self.n_agents)
         self.configurations[v_I].cost = 0
-        heapq.heappush(self.open, (self.configurations[v_I].cost + self.heuristic_configuration(v_I), v_I))
+        heapq.heappush(self.open, (
+        self.configurations[v_I].cost + self.heuristic_configuration(v_I, tuple([0] * self.n_agents)), v_I))
 
     def solve(self):
         configurations = self.configurations
         while len(self.open) > 0:
             v_k = heapq.heappop(self.open)[1]
             if v_k == self.v_F and all(
-                    configurations[self.v_F].target_indices[i] + 1 == len(self.policies[i]) for i in range(len(self.v_F))):
+                    configurations[self.v_F].target_indices[i] + 1 == len(self.policies[i]) for i in
+                    range(len(self.v_F))):
                 configurations[self.v_F].back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
@@ -83,14 +85,16 @@ class Mstar:
                     f = self.get_edge_weight(v_k, v_l)
 
                     v_k_target_indices = configurations[v_k].target_indices
+                    v_l_target_indices = tuple(configurations[v_l].target_indices)
                     temp_target_indices = [0] * self.n_agents
                     for i in range(self.n_agents):
                         if v_l[i] == self.v_W[i] or v_k_target_indices[i] == 1:
                             temp_target_indices[i] = 1
                         else:
                             temp_target_indices[i] = 0
-                    new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, tuple(temp_target_indices))
-                    old_cost_v_l = configurations[v_l].cost + self.heuristic_configuration(v_l)
+                    new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, tuple(
+                        temp_target_indices))
+                    old_cost_v_l = configurations[v_l].cost + self.heuristic_configuration(v_l, v_l_target_indices)
                     more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(
                         configurations[v_l].target_indices) < sum(
                         temp_target_indices)
@@ -98,7 +102,8 @@ class Mstar:
                         configurations[v_l].cost = configurations[v_k].cost + f
                         configurations[v_l].back_ptr = configurations[v_k].back_ptr + [v_k]
                         configurations[v_l].target_indices = temp_target_indices
-                        heapq.heappush(self.open, (configurations[v_l].cost + self.heuristic_configuration(v_l), v_l))
+                        heapq.heappush(self.open, (
+                        configurations[v_l].cost + self.heuristic_configuration(v_l, tuple(temp_target_indices)), v_l))
         return "No path exists, or I am an idiot"
 
     def get_limited_neighbours(self, v_k):
@@ -143,7 +148,9 @@ class Mstar:
             # Technically we should check whether its not already in open
             # But that takes too much time and it will settle it self
             # if not any(v_k in configuration for configuration in open):
-            heapq.heappush(self.open, (self.configurations[v_k].cost + self.heuristic_configuration(v_k), v_k))
+            target_indices = tuple(self.configurations[v_k].target_indices)
+            heapq.heappush(self.open,
+                           (self.configurations[v_k].cost + self.heuristic_configuration(v_k, target_indices), v_k))
             for v_m in self.configurations[v_k].back_set:
                 self.backprop(v_m, self.configurations[v_k].collisions)
 
@@ -164,10 +171,12 @@ class Mstar:
         double = set(double)
         return [i for i, val in enumerate(v_k) if val in double]
 
+    @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices=None):
         cost = 0
+        target_indices = self.configurations[v_k].target_indices if target_indices is None else target_indices
         for i in range(self.n_agents):
-            target_index = self.configurations[v_k].target_indices[i] if target_indices is None else target_indices[i]
+            target_index = target_indices[i]
             target = self.targets[i]
             cost += self.distances[i][target_index][v_k[i]]
             target_index += 1
