@@ -18,7 +18,7 @@ class Config:
         return str([self.cost, self.collisions, self.back_set, self.targets, self.back_ptr])
 
 
-def Mstar(graph, v_I, v_W, v_F, wait_cost):
+def Mstar(graph, v_I, v_W, v_F):
     # Dictionary for every configuration
     n_agents = len(v_I)
     configurations = {}
@@ -37,7 +37,7 @@ def Mstar(graph, v_I, v_W, v_F, wait_cost):
     edge_weights = {}
     for node in graph:
         # The cost for waiting
-        edge_weights[(node, node)] = wait_cost
+        edge_weights[(node, node)] = 1
         for nbr in graph[node]:
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = Config([0] * n_agents)
