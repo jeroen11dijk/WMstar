@@ -33,7 +33,7 @@ class Mstar:
         self.policies = []
         self.distances = []
         self.targets = []
-        for i in range(len(v_I)):
+        for i in range(self.n_agents):
             policy_i = []
             distance_i = []
             targets_i = []
@@ -113,7 +113,7 @@ class Mstar:
         V_k = []
         options = []
         configurations = self.configurations
-        for i in range(len(v_k)):
+        for i in range(self.n_agents):
             vi_k = v_k[i]
             options_i = []
             if i in configurations[v_k].collisions:
@@ -135,12 +135,12 @@ class Mstar:
         if len(options) == 1:
             option = options[0][0]
             if option not in configurations:
-                configurations[option] = Config([0] * len(v_k))
+                configurations[option] = Config([0] * self.n_agents)
             V_k.append(options[0][0])
             return V_k
         for element in itertools.product(*options):
             if element not in configurations:
-                configurations[element] = Config([0] * len(v_k))
+                configurations[element] = Config([0] * self.n_agents)
             V_k.append(element)
         return V_k
 
@@ -175,7 +175,7 @@ class Mstar:
     @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices=None):
         cost = 0
-        for i in range(len(v_k)):
+        for i in range(self.n_agents):
             target_index = self.configurations[v_k].target_indices[i] if target_indices is None else target_indices[i]
             target = self.targets[i]
             cost += self.distances[i][target_index][v_k[i]]
