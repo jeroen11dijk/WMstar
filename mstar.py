@@ -133,8 +133,10 @@ def backprop(v_k, v_W, C_l, open, configurations, distances):
     C_k = configurations[v_k].collisions
     if not C_l.issubset(C_k):
         C_k.update(C_l)
-        if not any(v_k in configuration for configuration in open):
-            heapq.heappush(open, (
+        # Technically we should check whether its not already in open
+        # But that takes too much time and it will settle it self
+        # if not any(v_k in configuration for configuration in open):
+        heapq.heappush(open, (
             configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, distances), v_k))
         for v_m in configurations[v_k].back_set:
             backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, distances)
