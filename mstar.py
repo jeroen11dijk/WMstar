@@ -24,15 +24,11 @@ def Mstar(graph, v_I, v_W, v_F):
     n_agents = len(v_I)
     configurations = {}
     phi_dictionary = {}
-    waypoint_policies = []
     policies = []
     for i in range(len(v_I)):
         policy_i = []
         if v_W[i] in graph:
-            waypoint_policies.append(nx.dijkstra_predecessor_and_distance(graph, v_W[i]))
             policy_i.append(nx.dijkstra_predecessor_and_distance(graph, v_W[i]))
-        else:
-            waypoint_policies.append(None)
         policy_i.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))
         policies.append(policy_i)
     configurations[v_I] = Config([0] * n_agents)

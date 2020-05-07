@@ -1,42 +1,19 @@
-import networkx as nx
-from matplotlib.pyplot import show, axis
+from mapfw import MapfwBenchmarker
+from networkx import single_target_shortest_path
 
-from mstar import Config
+from mstar import Mstar
+from test_benchmarks import setup_benchmark
 
-G = nx.grid_2d_graph(4, 4)
-
-v_I = ((0, 0), (0, 1))
-v_F = ((2, 3), (0, 3))
-
-
-def heuristic(u, v):
-    return abs((u[0] - v[0])) + abs((u[1] - v[1]))
-
-policy = []
-for i in range(len(v_F)):
-    opt = {}
-    for node in G:
-        path = nx.astar_path(G, node, v_F[i], heuristic)
-        weight = sum(G[u][v].get('weight', 1) for u, v in zip(path[:-1], path[1:]))
-        opt[node] = (path, weight)
-    policy.append(opt)
-
-nx.draw_networkx(G)
-show()
-
-G = nx.Graph()
-
-G.add_edge('a', 'b')
-G.add_edge('a', 'c', weight=0.2)
-G.add_edge('c', 'd', weight=0.1)
-G.add_edge('c', 'e', weight=0.7)
-G.add_edge('c', 'f', weight=0.9)
-G.add_edge('a', 'd', weight=0.3)
-
-a = [9, 0, 0]
-print(a[True])
-
-b = [3, 0, 1]
-c = [0, 1, 4]
-print([max(a) for a in (zip(b, c, a))])
-print([max(a) for a in (zip(b, c, a))])
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 4, "M*", "Test", True)
+for problem in benchmarker:
+    graph, v_I, v_W, v_F = setup_benchmark(problem)
+    problem.add_solution(Mstar(graph, v_I, v_W, v_F)[0])
+    start = v_I[0]
+    goal = v_F[0]
+    policies = single_target_shortest_path(graph, goal)
+    for policy in policies:
+        if len(policies[policy]) > 1:
+            policies[policy].pop(0)
+    print(start, goal)
+    print(policies[goal])
+    print(len(policies[start]))
