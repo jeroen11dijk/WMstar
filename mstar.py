@@ -1,6 +1,8 @@
 import heapq
 import itertools
 import math
+from functools import lru_cache
+
 import networkx as nx
 
 
@@ -70,17 +72,19 @@ class Mstar:
                     configurations[v_k].target_indices[i] = 1
                 else:
                     configurations[v_k].target_indices[i] = 0
-            v_k_collisions = self.phi_dictionary.get(v_k, None)
-            if v_k_collisions is None:
-                v_k_collisions = self.phi(v_k)
-                self.phi_dictionary[v_k] = v_k_collisions
+            # v_k_collisions = self.phi_dictionary.get(v_k, None)
+            # if v_k_collisions is None:
+            #     v_k_collisions = self.phi(v_k)
+            #     self.phi_dictionary[v_k] = v_k_collisions
+            v_k_collisions = self.phi(v_k)
             if len(v_k_collisions) == 0:
                 V_k = self.get_limited_neighbours(v_k)
                 for v_l in V_k:
-                    v_l_collisions = self.phi_dictionary.get(v_l, None)
-                    if v_l_collisions is None:
-                        v_l_collisions = self.phi(v_l)
-                        self.phi_dictionary[v_l] = v_l_collisions
+                    # v_l_collisions = self.phi_dictionary.get(v_l, None)
+                    # if v_l_collisions is None:
+                    #     v_l_collisions = self.phi(v_l)
+                    #     self.phi_dictionary[v_l] = v_l_collisions
+                    v_l_collisions = self.phi(v_l)
                     configurations[v_l].collisions.update(v_l_collisions)
                     configurations[v_l].back_set.append(v_k)
                     self.backprop(v_k, configurations[v_l].collisions)
@@ -93,7 +97,7 @@ class Mstar:
                             temp_target_indices[i] = 1
                         else:
                             temp_target_indices[i] = 0
-                    new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, temp_target_indices)
+                    new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, tuple(temp_target_indices))
                     old_cost_v_l = configurations[v_l].cost + self.heuristic_configuration(v_l)
                     more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(
                         configurations[v_l].target_indices) < sum(
@@ -138,7 +142,6 @@ class Mstar:
             if element not in configurations:
                 configurations[element] = Config([0] * len(v_k))
             V_k.append(element)
-        print(len(V_k))
         return V_k
 
     def backprop(self, v_k, C_l):
@@ -157,6 +160,7 @@ class Mstar:
 
     # Check for collisions
     # Credit to Hytak
+    @lru_cache(maxsize=None)
     def phi(self, v_k):
         seen = set()
         double = list()
@@ -168,6 +172,7 @@ class Mstar:
         double = set(double)
         return [i for i, val in enumerate(v_k) if val in double]
 
+    @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices=None):
         cost = 0
         for i in range(len(v_k)):
