@@ -173,6 +173,6 @@ def heuristic_configuration(v_k, configurations, distances, targets, target_indi
         cost += distances[i][target_index][v_k[i]]
         target_index += 1
         while target_index < len(target):
-            cost += distances[i][target_index][target[i]]
+            cost += distances[i][target_index][target[target_index - 1]]
             target_index += 1
     return cost
