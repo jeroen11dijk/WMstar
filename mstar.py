@@ -25,26 +25,26 @@ def Mstar(graph, v_I, v_W, v_F):
     configurations = {}
     phi_dictionary = {}
     policies = []
+    distances = []
     for i in range(len(v_I)):
         policy_i = []
+        distance_i = []
         if v_W[i] in graph:
-            waypoint_policies = nx.single_target_shortest_path(graph, v_W[i])
-            for waypoint_policy in waypoint_policies:
-                if len(waypoint_policies[waypoint_policy]) > 1:
-                    waypoint_policies[waypoint_policy].pop(0)
-            policy_i.append(waypoint_policies)
-        target_policies = nx.single_target_shortest_path(graph, v_F[i])
-        for target_policy in target_policies:
-            if len(target_policies[target_policy]) > 1:
-                target_policies[target_policy].pop(0)
-        policy_i.append(target_policies)
+            predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[0])
+            policy_i.append(predecessor)
+            distance_i.append(distance)
+        predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[0])
+        policy_i.append(predecessor)
+        distance_i.append(distance)
         policies.append(policy_i)
+        distances.append(distance_i)
     configurations[v_I] = Config([0] * n_agents)
     configurations[v_I].cost = 0
     open = []
-    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, policies), v_I))
+    heapq.heappush(open, (configurations[v_I].cost + heuristic_configuration(v_I, v_W, configurations, distances), v_I))
     while len(open) > 0:
         v_k = heapq.heappop(open)[1]
+        print(v_k)
         if v_k == v_F and all(configurations[v_F].targets[i] + 1 == len(policies[i]) for i in range(len(v_F))):
             configurations[v_F].back_ptr.append(v_F)
             res = []
@@ -71,7 +71,7 @@ def Mstar(graph, v_I, v_W, v_F):
                     phi_dictionary[v_l] = v_l_collisions
                 configurations[v_l].collisions.update(v_l_collisions)
                 configurations[v_l].back_set.append(v_k)
-                backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, policies)
+                backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, distances)
                 f = get_edge_weight(v_k, v_l, v_F)
 
                 v_k_targets = configurations[v_k].targets
@@ -82,8 +82,8 @@ def Mstar(graph, v_I, v_W, v_F):
                     else:
                         temp_targets[i] = 0
                 new_cost_v_l = configurations[v_k].cost + f + heuristic_configuration(v_l, v_W, configurations,
-                                                                                      policies, temp_targets)
-                old_cost_v_l = configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies)
+                                                                                      distances, temp_targets)
+                old_cost_v_l = configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, distances)
                 more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(configurations[v_l].targets) < sum(
                     temp_targets)
                 if len(v_l_collisions) == 0 and (new_cost_v_l < old_cost_v_l or more_targets):
@@ -91,7 +91,7 @@ def Mstar(graph, v_I, v_W, v_F):
                     configurations[v_l].back_ptr = configurations[v_k].back_ptr + [v_k]
                     configurations[v_l].targets = temp_targets
                     heapq.heappush(open, (
-                    configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
+                    configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, distances), v_l))
     return "No path exists, or I am a retard"
 
 
@@ -110,8 +110,12 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
             source = v_k[i]
             target = configurations[v_k].targets[i]
             policy = policies[i][target]
-            successor = policy[v_k[i]][0]
-            options_i.append(successor)
+            successors = policy[v_k[i]]
+            if len(successors) == 0:
+                options_i.append(source)
+            else:
+                for successor in successors:
+                    options_i.append(successor)
         options.append(options_i)
     if len(options) == 1:
         option = options[0][0]
@@ -126,15 +130,15 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
     return V_k
 
 
-def backprop(v_k, v_W, C_l, open, configurations, policies):
+def backprop(v_k, v_W, C_l, open, configurations, distances):
     C_k = configurations[v_k].collisions
     if not C_l.issubset(C_k):
         C_k.update(C_l)
         if not any(v_k in configuration for configuration in open):
             heapq.heappush(open, (
-            configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, policies), v_k))
+            configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, distances), v_k))
         for v_m in configurations[v_k].back_set:
-            backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, policies)
+            backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, distances)
 
 
 def get_edge_weight(v_k, v_l, v_F):
@@ -155,13 +159,13 @@ def phi(v_k):
     return [i for i, val in enumerate(v_k) if val in double]
 
 
-def heuristic_configuration(v_k, v_W, configurations, policies, targets=None):
+def heuristic_configuration(v_k, v_W, configurations, distances, targets=None):
     cost = 0
     for i in range(len(v_k)):
         target = configurations[v_k].targets[i] if targets is None else targets[i]
-        if target == len(policies[i]) - 1:
-            cost += len(policies[i][target][v_k[i]])
+        if target == len(distances[i]) - 1:
+            cost += distances[i][target][v_k[i]]
         else:
-            cost += len(policies[i][target][v_k[i]])
-            cost += len(policies[i][target + 1][v_W[i]])
+            cost += distances[i][target][v_k[i]]
+            cost += distances[i][target + 1][v_W[i]]
     return cost
