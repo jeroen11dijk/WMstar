@@ -37,7 +37,7 @@ def Mstar(graph, v_I, v_W, v_F):
     edge_weights = {}
     for node in graph:
         # The cost for waiting
-        edge_weights[(node, node)] = 0
+        edge_weights[(node, node)] = 1
         for nbr in graph[node]:
             edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = Config([0] * n_agents)
@@ -72,7 +72,7 @@ def Mstar(graph, v_I, v_W, v_F):
                 configurations[v_l].collisions.update(v_l_collisions)
                 configurations[v_l].back_set.append(v_k)
                 backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, policies)
-                f = get_edge_weight(v_k, v_l, edge_weights)
+                f = get_edge_weight(v_k, v_l, v_F, edge_weights)
 
                 v_k_targets = configurations[v_k].targets
                 temp_targets = [0] * n_agents
@@ -137,8 +137,8 @@ def backprop(v_k, v_W, C_l, open, configurations, policies):
             backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, policies)
 
 
-def get_edge_weight(v_k, v_l, edge_weights):
-    return sum(edge_weights[(k, l)] for k, l in zip(v_k, v_l))
+def get_edge_weight(v_k, v_l, v_F, edge_weights):
+    return sum(0 if k == l == m else edge_weights[(k, l)] for k, l, m in zip(v_k, v_l, v_F))
 
 
 # Check for collisions
