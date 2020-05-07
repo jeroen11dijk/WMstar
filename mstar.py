@@ -9,6 +9,7 @@ import networkx as nx
 class Config:
     def __init__(self, target_indices):
         self.cost = float('inf')
+        self.heuristic = float('inf')
         self.collisions = set()
         self.back_set = []
         self.target_indices = target_indices
@@ -52,8 +53,7 @@ class Mstar:
         self.open = []
         self.configurations[v_I] = Config([0] * self.n_agents)
         self.configurations[v_I].cost = 0
-        heapq.heappush(self.open, (
-        self.configurations[v_I].cost + self.heuristic_configuration(v_I, tuple([0] * self.n_agents)), v_I))
+        heapq.heappush(self.open, (self.heuristic_configuration(v_I, tuple([0] * self.n_agents)), v_I))
 
     def solve(self):
         configurations = self.configurations
@@ -67,13 +67,6 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in configurations[self.v_F].back_ptr])
                 return res, configurations[self.v_F].cost
-            back_ptr_target_indices = configurations[configurations[v_k].back_ptr[-1]].target_indices if len(
-                configurations[v_k].back_ptr) > 0 else [0] * self.n_agents
-            for i in range(self.n_agents):
-                if v_k[i] == self.v_W[i] or back_ptr_target_indices[i] == 1:
-                    configurations[v_k].target_indices[i] = 1
-                else:
-                    configurations[v_k].target_indices[i] = 0
             v_k_collisions = self.phi(v_k)
             if len(v_k_collisions) == 0:
                 V_k = self.get_limited_neighbours(v_k)
