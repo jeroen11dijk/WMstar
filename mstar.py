@@ -3,6 +3,7 @@ import itertools
 import math
 import networkx as nx
 
+
 class Config:
     def __init__(self, targets):
         self.cost = float('inf')
@@ -34,12 +35,6 @@ def Mstar(graph, v_I, v_W, v_F):
             waypoint_policies.append(None)
         policy_i.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))
         policies.append(policy_i)
-    edge_weights = {}
-    for node in graph:
-        # The cost for waiting
-        edge_weights[(node, node)] = 1
-        for nbr in graph[node]:
-            edge_weights[(node, nbr)] = graph.get_edge_data(node, nbr).get('weight', 1)
     configurations[v_I] = Config([0] * n_agents)
     configurations[v_I].cost = 0
     open = []
@@ -52,7 +47,8 @@ def Mstar(graph, v_I, v_W, v_F):
             for i in range(n_agents):
                 res.append([list(config[i]) for config in configurations[v_F].back_ptr])
             return res, configurations[v_F].cost
-        back_ptr_targets = configurations[configurations[v_k].back_ptr[-1]].targets if len(configurations[v_k].back_ptr) > 0 else [0] * n_agents
+        back_ptr_targets = configurations[configurations[v_k].back_ptr[-1]].targets if len(
+            configurations[v_k].back_ptr) > 0 else [0] * n_agents
         for i in range(n_agents):
             if v_k[i] == v_W[i] or back_ptr_targets[i] == 1:
                 configurations[v_k].targets[i] = 1
@@ -72,7 +68,7 @@ def Mstar(graph, v_I, v_W, v_F):
                 configurations[v_l].collisions.update(v_l_collisions)
                 configurations[v_l].back_set.append(v_k)
                 backprop(v_k, v_W, configurations[v_l].collisions, open, configurations, policies)
-                f = get_edge_weight(v_k, v_l, v_F, edge_weights)
+                f = get_edge_weight(v_k, v_l, v_F)
 
                 v_k_targets = configurations[v_k].targets
                 temp_targets = [0] * n_agents
@@ -81,14 +77,17 @@ def Mstar(graph, v_I, v_W, v_F):
                         temp_targets[i] = 1
                     else:
                         temp_targets[i] = 0
-                new_cost_v_l = configurations[v_k].cost + f + heuristic_configuration(v_l, v_W, configurations, policies, temp_targets)
+                new_cost_v_l = configurations[v_k].cost + f + heuristic_configuration(v_l, v_W, configurations,
+                                                                                      policies, temp_targets)
                 old_cost_v_l = configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies)
-                more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(configurations[v_l].targets) < sum(temp_targets)
+                more_targets = math.isclose(new_cost_v_l, old_cost_v_l) and sum(configurations[v_l].targets) < sum(
+                    temp_targets)
                 if len(v_l_collisions) == 0 and (new_cost_v_l < old_cost_v_l or more_targets):
                     configurations[v_l].cost = configurations[v_k].cost + f
                     configurations[v_l].back_ptr = configurations[v_k].back_ptr + [v_k]
                     configurations[v_l].targets = temp_targets
-                    heapq.heappush(open, (configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
+                    heapq.heappush(open, (
+                    configurations[v_l].cost + heuristic_configuration(v_l, v_W, configurations, policies), v_l))
     return "No path exists, or I am a retard"
 
 
@@ -132,13 +131,14 @@ def backprop(v_k, v_W, C_l, open, configurations, policies):
     if not C_l.issubset(C_k):
         C_k.update(C_l)
         if not any(v_k in configuration for configuration in open):
-            heapq.heappush(open, (configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, policies), v_k))
+            heapq.heappush(open, (
+            configurations[v_k].cost + heuristic_configuration(v_k, v_W, configurations, policies), v_k))
         for v_m in configurations[v_k].back_set:
             backprop(v_m, v_W, configurations[v_k].collisions, open, configurations, policies)
 
 
-def get_edge_weight(v_k, v_l, v_F, edge_weights):
-    return sum(0 if k == l == m else edge_weights[(k, l)] for k, l, m in zip(v_k, v_l, v_F))
+def get_edge_weight(v_k, v_l, v_F):
+    return sum(0 if k == l == m else 1 for k, l, m in zip(v_k, v_l, v_F))
 
 
 # Check for collisions
