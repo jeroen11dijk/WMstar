@@ -72,18 +72,10 @@ class Mstar:
                     configurations[v_k].target_indices[i] = 1
                 else:
                     configurations[v_k].target_indices[i] = 0
-            # v_k_collisions = self.phi_dictionary.get(v_k, None)
-            # if v_k_collisions is None:
-            #     v_k_collisions = self.phi(v_k)
-            #     self.phi_dictionary[v_k] = v_k_collisions
             v_k_collisions = self.phi(v_k)
             if len(v_k_collisions) == 0:
                 V_k = self.get_limited_neighbours(v_k)
                 for v_l in V_k:
-                    # v_l_collisions = self.phi_dictionary.get(v_l, None)
-                    # if v_l_collisions is None:
-                    #     v_l_collisions = self.phi(v_l)
-                    #     self.phi_dictionary[v_l] = v_l_collisions
                     v_l_collisions = self.phi(v_l)
                     configurations[v_l].collisions.update(v_l_collisions)
                     configurations[v_l].back_set.append(v_k)
