@@ -28,8 +28,16 @@ def Mstar(graph, v_I, v_W, v_F):
     for i in range(len(v_I)):
         policy_i = []
         if v_W[i] in graph:
-            policy_i.append(nx.dijkstra_predecessor_and_distance(graph, v_W[i]))
-        policy_i.append(nx.dijkstra_predecessor_and_distance(graph, v_F[i]))
+            waypoint_policies = nx.single_target_shortest_path(graph, v_W[i])
+            for waypoint_policy in waypoint_policies:
+                if len(waypoint_policies[waypoint_policy]) > 1:
+                    waypoint_policies[waypoint_policy].pop(0)
+            policy_i.append(waypoint_policies)
+        target_policies = nx.single_target_shortest_path(graph, v_F[i])
+        for target_policy in target_policies:
+            if len(target_policies[target_policy]) > 1:
+                target_policies[target_policy].pop(0)
+        policy_i.append(target_policies)
         policies.append(policy_i)
     configurations[v_I] = Config([0] * n_agents)
     configurations[v_I].cost = 0
@@ -101,13 +109,9 @@ def get_limited_neighbours(v_k, configurations, graph, policies):
         else:
             source = v_k[i]
             target = configurations[v_k].targets[i]
-            policy = policies[i][target][0]
-            successors = policy[v_k[i]]
-            if len(successors) == 0:
-                options_i.append(source)
-            else:
-                for successor in successors:
-                    options_i.append(successor)
+            policy = policies[i][target]
+            successor = policy[v_k[i]][0]
+            options_i.append(successor)
         options.append(options_i)
     if len(options) == 1:
         option = options[0][0]
@@ -155,15 +159,9 @@ def heuristic_configuration(v_k, v_W, configurations, policies, targets=None):
     cost = 0
     for i in range(len(v_k)):
         target = configurations[v_k].targets[i] if targets is None else targets[i]
-        if target == 0 and target == len(policies[i]) - 1:
-            policy_costs_new = policies[i][target][1]
-            cost += policy_costs_new[v_k[i]]
-        elif target == 1 and target == len(policies[i]) - 1:
-            policy_costs_new = policies[i][target][1]
-            cost += policy_costs_new[v_k[i]]
+        if target == len(policies[i]) - 1:
+            cost += len(policies[i][target][v_k[i]])
         else:
-            policy_costs_new = policies[i][target][1]
-            cost += policy_costs_new[v_k[i]]
-            policy_costs_new = policies[i][target + 1][1]
-            cost += policy_costs_new[v_W[i]]
+            cost += len(policies[i][target][v_k[i]])
+            cost += len(policies[i][target + 1][v_W[i]])
     return cost
