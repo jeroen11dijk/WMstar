@@ -8,7 +8,7 @@ from mstar import Mstar
 
 
 def main(G, v_I, v_W, v_F, min_cost):
-    res = Mstar(G, v_I, v_W, v_F)
+    res = Mstar(G, v_I, v_W, v_F).solve()
     assert res[1] < min_cost or math.isclose(res[1], min_cost)
     paths = res[0]
     for i in range(len(v_I)):
