@@ -92,8 +92,8 @@ class Mstar:
                         configurations[v_l].cost = configurations[v_k].cost + f
                         configurations[v_l].back_ptr = configurations[v_k].back_ptr + [v_k]
                         configurations[v_l].target_indices = temp_target_indices
-                        heapq.heappush(self.open, (
-                        configurations[v_l].cost + self.heuristic_configuration(v_l, tuple(temp_target_indices)), v_l))
+                        heuristic = self.heuristic_configuration(v_l, tuple(temp_target_indices))
+                        heapq.heappush(self.open, (configurations[v_l].cost + heuristic, v_l))
         return "No path exists, or I am an idiot"
 
     def get_limited_neighbours(self, v_k):
@@ -146,7 +146,7 @@ class Mstar:
 
     @lru_cache(maxsize=None)
     def get_edge_weight(self, v_k, v_l):
-        return sum(0 if k == l == m else 1 for k, l, m in zip(v_k, v_l, self.v_F))
+        return sum(0 if a == b == c else 1 for a, b, c in zip(v_k, v_l, self.v_F))
 
     # Check for collisions
     # Credit to Hytak
