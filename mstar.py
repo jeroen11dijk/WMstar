@@ -76,12 +76,12 @@ class Mstar:
                     configurations[v_l].collisions.update(v_l_collisions)
                     configurations[v_l].back_set.append(v_k)
                     self.backprop(v_k, configurations[v_l].collisions)
-                    f = self.get_edge_weight(v_k, v_l)
                     temp_target_indices = copy(configurations[v_k].target_indices)
                     for i in range(self.n_agents):
                         if v_l[i] == self.targets[i][temp_target_indices[i]] and v_l[i] != self.v_F[i]:
                             temp_target_indices[i] += 1
                     v_l_target_indices = tuple(configurations[v_l].target_indices)
+                    f = self.get_edge_weight(v_k, v_l, tuple(temp_target_indices))
                     new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, tuple(
                         temp_target_indices))
                     old_cost_v_l = configurations[v_l].cost + self.heuristic_configuration(v_l, v_l_target_indices)
@@ -145,8 +145,14 @@ class Mstar:
                 self.backprop(v_m, self.configurations[v_k].collisions)
 
     @lru_cache(maxsize=None)
-    def get_edge_weight(self, v_k, v_l):
-        return sum(0 if a == b == c else 1 for a, b, c in zip(v_k, v_l, self.v_F))
+    def get_edge_weight(self, v_k, v_l, target_indices):
+        cost = 0
+        for i in range(self.n_agents):
+            if v_k[i] == v_l[i] == self.v_F[i] and target_indices[i] == len(self.targets[i]) - 1:
+                cost += 0
+            else:
+                cost += 1
+        return cost
 
     # Check for collisions
     # Credit to Hytak

@@ -99,7 +99,7 @@ class TestBenchmarks:
     #     benchmark(14, xx)
 
     def test_benchmark_15(self):
-        benchmark(15, 74)
+        benchmark(15, 76)
 
     def test_benchmark_16(self):
         benchmark(16, 76)
