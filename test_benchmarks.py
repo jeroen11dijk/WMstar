@@ -9,6 +9,8 @@ from mstar import Mstar
 
 def main(G, v_I, v_W, v_F, min_cost):
     res = Mstar(G, v_I, v_W, v_F).solve()
+    if res[1] < min_cost:
+        print(res[1])
     assert res[1] < min_cost or math.isclose(res[1], min_cost)
     paths = res[0]
     for i in range(len(v_I)):
@@ -52,19 +54,56 @@ def setup_benchmark(problem):
 
 class TestBenchmarks:
     def test_benchmark_1(self):
-        benchmark(1, 50)
+        benchmark(1, 26)
 
     def test_benchmark_2(self):
         benchmark(2, 38)
 
     def test_benchmark_3(self):
-        benchmark(3, 76)
+        benchmark(3, 73)
 
     def test_benchmark_4(self):
         benchmark(4, 17)
 
+    def test_benchmark_5(self):
+        benchmark(5, 110)
+
     def test_benchmark_6(self):
         benchmark(6, 21)
 
-    # def test_benchmark_17(self):
-    #     benchmark(17, 41)
+    # TODO one agent doesnt work yet
+    # def test_benchmark_7(self):
+    #     benchmark(7, xx)
+
+    # TODO one agent doesnt work yet
+    # def test_benchmark_8(self):
+    #     benchmark(8, xx)
+
+    def test_benchmark_9(self):
+        benchmark(9, 2677)
+
+    # TODO cant solve it within a decent time
+    # def test_benchmark_10(self):
+    #     benchmark(10, xx)
+
+    def test_benchmark_11(self):
+        benchmark(11, 110)
+
+    def test_benchmark_12(self):
+        benchmark(12, 110)
+
+    def test_benchmark_13(self):
+        benchmark(13, 43)
+
+    # TODO one agent doesnt work yet
+    # def test_benchmark_14(self):
+    #     benchmark(14, xx)
+
+    def test_benchmark_15(self):
+        benchmark(15, 74)
+
+    def test_benchmark_16(self):
+        benchmark(16, 76)
+
+    def test_benchmark_17(self):
+        benchmark(17, 41)
