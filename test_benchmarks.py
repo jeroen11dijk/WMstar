@@ -1,5 +1,4 @@
 import math
-import time
 
 from mapfw import MapfwBenchmarker
 from networkx import grid_graph
