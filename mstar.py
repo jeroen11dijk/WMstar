@@ -39,11 +39,12 @@ class Mstar:
             policy_i = []
             distance_i = []
             targets_i = []
-            if v_W[i] in graph:
-                predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_W[i])
-                policy_i.append(predecessor)
-                distance_i.append(distance)
-                targets_i.append(v_W[i])
+            for waypoint in v_W[i]:
+                if waypoint in graph:
+                    predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, waypoint)
+                    policy_i.append(predecessor)
+                    distance_i.append(distance)
+                    targets_i.append(waypoint)
             predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[i])
             policy_i.append(predecessor)
             distance_i.append(distance)
@@ -78,7 +79,7 @@ class Mstar:
                     f = self.get_edge_weight(v_k, v_l)
                     temp_target_indices = copy(configurations[v_k].target_indices)
                     for i in range(self.n_agents):
-                        if v_l[i] == self.targets[i][configurations[v_l].target_indices[i]] and v_l[i] != self.v_F[i]:
+                        if v_l[i] == self.targets[i][temp_target_indices[i]] and v_l[i] != self.v_F[i]:
                             temp_target_indices[i] += 1
                     v_l_target_indices = tuple(configurations[v_l].target_indices)
                     new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, tuple(

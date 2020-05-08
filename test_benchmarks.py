@@ -16,7 +16,7 @@ def main(G, v_I, v_W, v_F, min_cost):
     for i in range(len(v_W)):
         if len(v_W[i]) > 0:
             for waypoint in v_W[i]:
-                assert any(waypoint in config for config in paths[i])
+                assert list(waypoint) in paths[i]
     for i in range(len(v_F)):
         assert v_F[i] == paths[i][-1] or list(v_F[i]) == paths[i][-1]
 
@@ -37,11 +37,15 @@ def setup_benchmark(problem):
     # Create V_I and v_F
     v_I = tuple(tuple(start) for start in problem.starts)
     v_W = []
-    for waypoint in problem.waypoints:
-        if len(waypoint) > 0:
-            v_W.append(tuple(tuple(waypoint[0])))
+    for agent_waypoints in problem.waypoints:
+        if len(agent_waypoints) > 0:
+            v_W_i = []
+            for waypoint in agent_waypoints:
+                v_W_i.append(tuple(tuple(waypoint)))
+            v_W.append(v_W_i)
         else:
             v_W.append(())
+    v_W = tuple(v_W)
     v_F = tuple(tuple(target) for target in problem.goals)
     return graph, v_I, v_W, v_F
 
