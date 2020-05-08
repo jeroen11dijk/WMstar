@@ -62,5 +62,5 @@ class TestBenchmarks:
     def test_benchmark_6(self):
         benchmark(6, 21)
 
-    def test_benchmark_17(self):
-        benchmark(17, 41)
+    # def test_benchmark_17(self):
+    #     benchmark(17, 41)

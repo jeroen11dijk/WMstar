@@ -1,6 +1,7 @@
 import heapq
 import itertools
 import math
+from copy import copy
 from functools import lru_cache
 
 import networkx as nx
@@ -75,15 +76,11 @@ class Mstar:
                     configurations[v_l].back_set.append(v_k)
                     self.backprop(v_k, configurations[v_l].collisions)
                     f = self.get_edge_weight(v_k, v_l)
-
-                    v_k_target_indices = configurations[v_k].target_indices
-                    v_l_target_indices = tuple(configurations[v_l].target_indices)
-                    temp_target_indices = [0] * self.n_agents
+                    temp_target_indices = copy(configurations[v_k].target_indices)
                     for i in range(self.n_agents):
-                        if v_l[i] == self.v_W[i] or v_k_target_indices[i] == 1:
-                            temp_target_indices[i] = 1
-                        else:
-                            temp_target_indices[i] = 0
+                        if v_l[i] == self.targets[i][configurations[v_l].target_indices[i]] and v_l[i] != self.v_F[i]:
+                            temp_target_indices[i] += 1
+                    v_l_target_indices = tuple(configurations[v_l].target_indices)
                     new_cost_v_l = configurations[v_k].cost + f + self.heuristic_configuration(v_l, tuple(
                         temp_target_indices))
                     old_cost_v_l = configurations[v_l].cost + self.heuristic_configuration(v_l, v_l_target_indices)
