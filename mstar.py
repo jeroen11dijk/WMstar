@@ -137,9 +137,7 @@ class Mstar:
     def get_edge_weight(self, v_k, v_l, target_indices):
         cost = 0
         for i in range(self.n_agents):
-            if v_k[i] == v_l[i] == self.v_F[i] and target_indices[i] == len(self.targets[i]) - 1:
-                cost += 0
-            else:
+            if not (v_k[i] == v_l[i] == self.v_F[i] and target_indices[i] == len(self.targets[i]) - 1):
                 cost += 1
         return cost
 
@@ -158,9 +156,9 @@ class Mstar:
         return [i for i, val in enumerate(v_k) if val in double]
 
     @lru_cache(maxsize=None)
-    def heuristic_configuration(self, v_k, target_indices=None):
+    def heuristic_configuration(self, v_k, target_indices):
         cost = 0
-        target_indices = self.configurations[v_k].target_indices if target_indices is None else target_indices
+        target_indices = target_indices
         for i in range(self.n_agents):
             target_index = target_indices[i]
             target = self.targets[i]
