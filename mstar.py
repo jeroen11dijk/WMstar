@@ -58,12 +58,13 @@ class Mstar:
         configurations = self.configurations
         while len(self.open) > 0:
             v_k, target_indices = heapq.heappop(self.open)[1]
+            v_k_config = configurations[(v_k, target_indices)]
             if v_k == self.v_F and all(target_indices[i] + 1 == len(self.targets[i]) for i in range(len(self.v_F))):
-                configurations[(v_k, target_indices)].back_ptr.append(self.v_F)
+                v_k_config.back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
-                    res.append([list(config[i]) for config in configurations[(v_k, target_indices)].back_ptr])
-                return res, configurations[(v_k, target_indices)].cost
+                    res.append([list(config[i]) for config in v_k_config.back_ptr])
+                return res, v_k_config.cost
             if len(self.phi(v_k)) == 0:
                 V_k = self.get_limited_neighbours(v_k, target_indices)
                 for v_l in V_k:
@@ -81,11 +82,11 @@ class Mstar:
                     self.backprop(v_k, target_indices, v_l_config.collisions)
 
                     f = self.get_edge_weight(v_k, v_l, v_l_target_indices)
-                    new_cost_v_l = configurations[(v_k, target_indices)].cost + f
+                    new_cost_v_l = v_k_config.cost + f
                     old_cost_v_l = v_l_config.cost
                     if len(v_l_collisions) == 0 and new_cost_v_l < old_cost_v_l:
-                        v_l_config.cost = configurations[(v_k, target_indices)].cost + f
-                        v_l_config.back_ptr = configurations[(v_k, target_indices)].back_ptr + [v_k]
+                        v_l_config.cost = v_k_config.cost + f
+                        v_l_config.back_ptr = v_k_config.back_ptr + [v_k]
                         heuristic = self.heuristic_configuration(v_l, v_l_target_indices)
                         heapq.heappush(self.open, (v_l_config.cost + heuristic, (v_l, v_l_target_indices)))
         return "No path exists, or I am an idiot"
