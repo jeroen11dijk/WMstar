@@ -70,13 +70,11 @@ class TestBenchmarks:
     def test_benchmark_6(self):
         benchmark(6, 21)
 
-    # TODO one agent doesnt work yet
-    # def test_benchmark_7(self):
-    #     benchmark(7, xx)
+    def test_benchmark_7(self):
+        benchmark(7, 346)
 
-    # TODO one agent doesnt work yet
-    # def test_benchmark_8(self):
-    #     benchmark(8, xx)
+    def test_benchmark_8(self):
+        benchmark(8, 1932)
 
     def test_benchmark_9(self):
         benchmark(9, 2677)
@@ -94,12 +92,11 @@ class TestBenchmarks:
     def test_benchmark_13(self):
         benchmark(13, 43)
 
-    # TODO one agent doesnt work yet
-    # def test_benchmark_14(self):
-    #     benchmark(14, xx)
+    def test_benchmark_14(self):
+        benchmark(14, 35)
 
     def test_benchmark_15(self):
-        benchmark(15, 74)
+        benchmark(15, 76)
 
     def test_benchmark_16(self):
         benchmark(16, 76)
