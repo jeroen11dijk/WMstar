@@ -75,20 +75,19 @@ class Mstar:
                     v_l_collisions = self.phi(v_l)
                     if (v_l, v_l_target_indices) not in configurations:
                         configurations[(v_l, v_l_target_indices)] = Config()
-                    configurations[(v_l, v_l_target_indices)].collisions.update(v_l_collisions)
-                    configurations[(v_l, v_l_target_indices)].back_set.append((v_k, target_indices))
-                    self.backprop(v_k, target_indices, configurations[(v_l, v_l_target_indices)].collisions)
+                    v_l_config =  configurations[(v_l, v_l_target_indices)]
+                    v_l_config.collisions.update(v_l_collisions)
+                    v_l_config.back_set.append((v_k, target_indices))
+                    self.backprop(v_k, target_indices, v_l_config.collisions)
 
                     f = self.get_edge_weight(v_k, v_l, v_l_target_indices)
                     new_cost_v_l = configurations[(v_k, target_indices)].cost + f
-                    old_cost_v_l = configurations[(v_l, v_l_target_indices)].cost
+                    old_cost_v_l = v_l_config.cost
                     if len(v_l_collisions) == 0 and new_cost_v_l < old_cost_v_l:
-                        configurations[(v_l, v_l_target_indices)].cost = configurations[(v_k, target_indices)].cost + f
-                        configurations[(v_l, v_l_target_indices)].back_ptr = configurations[
-                                                                                 (v_k, target_indices)].back_ptr + [v_k]
+                        v_l_config.cost = configurations[(v_k, target_indices)].cost + f
+                        v_l_config.back_ptr = configurations[(v_k, target_indices)].back_ptr + [v_k]
                         heuristic = self.heuristic_configuration(v_l, v_l_target_indices)
-                        heapq.heappush(self.open, (
-                        configurations[(v_l, v_l_target_indices)].cost + heuristic, (v_l, v_l_target_indices)))
+                        heapq.heappush(self.open, (v_l_config.cost + heuristic, (v_l, v_l_target_indices)))
         return "No path exists, or I am an idiot"
 
     def get_limited_neighbours(self, v_k, target_indices):
