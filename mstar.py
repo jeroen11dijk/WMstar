@@ -1,7 +1,5 @@
 import heapq
 import itertools
-import math
-from copy import copy
 from functools import lru_cache
 
 import networkx as nx
@@ -53,7 +51,8 @@ class Mstar:
         self.open = []
         self.configurations[(v_I, (0,) * self.n_agents)] = Config()
         self.configurations[(v_I, (0,) * self.n_agents)].cost = 0
-        heapq.heappush(self.open, (self.heuristic_configuration(v_I, tuple([0] * self.n_agents)), (v_I, (0,) * self.n_agents)))
+        heapq.heappush(self.open,
+                       (self.heuristic_configuration(v_I, tuple([0] * self.n_agents)), (v_I, (0,) * self.n_agents)))
 
     def solve(self):
         configurations = self.configurations
@@ -85,9 +84,11 @@ class Mstar:
                     old_cost_v_l = configurations[(v_l, v_l_target_indices)].cost
                     if len(v_l_collisions) == 0 and new_cost_v_l < old_cost_v_l:
                         configurations[(v_l, v_l_target_indices)].cost = configurations[(v_k, target_indices)].cost + f
-                        configurations[(v_l, v_l_target_indices)].back_ptr = configurations[(v_k, target_indices)].back_ptr + [v_k]
+                        configurations[(v_l, v_l_target_indices)].back_ptr = configurations[
+                                                                                 (v_k, target_indices)].back_ptr + [v_k]
                         heuristic = self.heuristic_configuration(v_l, v_l_target_indices)
-                        heapq.heappush(self.open, (configurations[(v_l, v_l_target_indices)].cost + heuristic, (v_l, v_l_target_indices)))
+                        heapq.heappush(self.open, (
+                        configurations[(v_l, v_l_target_indices)].cost + heuristic, (v_l, v_l_target_indices)))
         return "No path exists, or I am an idiot"
 
     def get_limited_neighbours(self, v_k, target_indices):
@@ -121,16 +122,16 @@ class Mstar:
         return V_k
 
     def backprop(self, v_k, target_indices, C_l):
-        C_k = self.configurations[(v_k, target_indices)].collisions
-        if not C_l.issubset(C_k):
-            C_k.update(C_l)
+        v_k_config = self.configurations[(v_k, target_indices)]
+        if not C_l.issubset(v_k_config.collisions):
+            v_k_config.collisions.update(C_l)
             # Technically we should check whether its not already in open
             # But that takes too much time and it will settle it self
             # if not any(v_k in configuration for configuration in open):
-            heapq.heappush(self.open,
-                           (self.configurations[(v_k, target_indices)].cost + self.heuristic_configuration(v_k, target_indices), (v_k, target_indices)))
-            for v_m, v_m_target_indices in self.configurations[(v_k, target_indices)].back_set:
-                self.backprop(v_m, v_m_target_indices, self.configurations[(v_k, target_indices)].collisions)
+            heuristic = self.heuristic_configuration(v_k, target_indices)
+            heapq.heappush(self.open, (v_k_config.cost + heuristic, (v_k, target_indices)))
+            for v_m, v_m_target_indices in v_k_config.back_set:
+                self.backprop(v_m, v_m_target_indices, v_k_config.collisions)
 
     @lru_cache(maxsize=None)
     def get_edge_weight(self, v_k, v_l, target_indices):
