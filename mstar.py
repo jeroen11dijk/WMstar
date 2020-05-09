@@ -76,7 +76,7 @@ class Mstar:
                     v_l_collisions = self.phi(v_l)
                     if (v_l, v_l_target_indices) not in configurations:
                         configurations[(v_l, v_l_target_indices)] = Config()
-                    v_l_config =  configurations[(v_l, v_l_target_indices)]
+                    v_l_config = configurations[(v_l, v_l_target_indices)]
                     v_l_config.collisions.update(v_l_collisions)
                     v_l_config.back_set.append((v_k, target_indices))
                     self.backprop(v_k, target_indices, v_l_config.collisions)
@@ -115,7 +115,7 @@ class Mstar:
                         options_i.append(successor)
             options.append(options_i)
         if len(options) == 1:
-            V_k.append(options[0][0])
+            V_k.append((options[0][0], ))
             return V_k
         for element in itertools.product(*options):
             V_k.append(element)
