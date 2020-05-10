@@ -22,11 +22,16 @@ class Config:
 
 class Mstar:
     def __init__(self, graph, v_I, v_W, v_F):
+        self.n_agents = len(v_I)
         self.graph = graph
         self.v_I = v_I
         self.v_W = v_W
+        for i in range(self.n_agents):
+            start = v_I[i]
+            end = v_F[i]
+            if len(self.v_W[i]) > 0:
+                self.v_W[i].sort(key=lambda x: euclidian_distance(start, x) / euclidian_distance(end, x))
         self.v_F = v_F
-        self.n_agents = len(v_I)
         self.configurations = {}
         self.policies = []
         self.distances = []
@@ -115,7 +120,7 @@ class Mstar:
                         options_i.append(successor)
             options.append(options_i)
         if len(options) == 1:
-            V_k.append((options[0][0], ))
+            V_k.append((options[0][0],))
             return V_k
         for element in itertools.product(*options):
             V_k.append(element)
@@ -168,3 +173,7 @@ class Mstar:
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
         return cost
+
+
+def euclidian_distance(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
