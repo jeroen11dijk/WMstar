@@ -105,18 +105,14 @@ on the target compiler, falling back to C++11 if C++14 support is not
 available.  Note, however, that this default is subject to change: future
 pybind11 releases are expected to migrate to newer C++ standards as they become
 available.  To override this, the standard flag can be given explicitly in
-``PYBIND11_CPP_STANDARD``:
+`CMAKE_CXX_STANDARD <https://cmake.org/cmake/help/v3.17/variable/CMAKE_CXX_STANDARD.html>`_:
 
 .. code-block:: cmake
 
     # Use just one of these:
-    # GCC/clang:
-    set(PYBIND11_CPP_STANDARD -std=c++11)
-    set(PYBIND11_CPP_STANDARD -std=c++14)
-    set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental C++17 support
-    # MSVC:
-    set(PYBIND11_CPP_STANDARD /std:c++14)
-    set(PYBIND11_CPP_STANDARD /std:c++latest) # Enables some MSVC C++17 features
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17) # Experimental C++17 support
 
     add_subdirectory(pybind11)  # or find_package(pybind11)
 
@@ -148,6 +144,18 @@ See the `Config file`_ docstring for details of relevant CMake variables.
 
     find_package(pybind11 REQUIRED)
     pybind11_add_module(example example.cpp)
+
+Note that ``find_package(pybind11)`` will only work correctly if pybind11
+has been correctly installed on the system, e. g. after downloading or cloning
+the pybind11 repository  :
+
+.. code-block:: bash
+
+    cd pybind11
+    mkdir build
+    cd build
+    cmake ..
+    make install
 
 Once detected, the aforementioned ``pybind11_add_module`` can be employed as
 before. The function usage and configuration variables are identical no matter
@@ -275,3 +283,11 @@ code by introspecting existing C++ codebases using LLVM/Clang. See the
 [binder]_ documentation for details.
 
 .. [binder] http://cppbinder.readthedocs.io/en/latest/about.html
+
+[AutoWIG]_ is a Python library that wraps automatically compiled libraries into
+high-level languages. It parses C++ code using LLVM/Clang technologies and
+generates the wrappers using the Mako templating engine. The approach is automatic,
+extensible, and applies to very complex C++ libraries, composed of thousands of
+classes or incorporating modern meta-programming constructs.
+
+.. [AutoWIG] https://github.com/StatisKit/AutoWIG
