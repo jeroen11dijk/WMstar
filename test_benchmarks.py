@@ -1,7 +1,6 @@
 import math
 
 from mapfw import MapfwBenchmarker
-from networkx import grid_graph
 
 from mstar import Mstar
 
@@ -30,11 +29,21 @@ def benchmark(i, min_cost):
 
 
 def setup_benchmark(problem):
-    graph = grid_graph([len(problem.grid), len(problem.grid[0])])
-    for i in range(len(problem.grid)):
-        for j in range(len(problem.grid[0])):
-            if problem.grid[i][j] == 1:
-                graph.remove_node((j, i))
+    grap_new = {}
+    for i in range(problem.height):
+        for j in range(problem.width):
+            if problem.grid[i][j] == 0:
+                current = (j, i)
+                neighbours = []
+                if i != 0 and problem.grid[i - 1][j] == 0:
+                    neighbours.append((j, i - 1))
+                if j != 0 and problem.grid[i][j - 1] == 0:
+                    neighbours.append((j - 1, i))
+                if i != problem.height - 1 and problem.grid[i + 1][j] == 0:
+                    neighbours.append((j, i + 1))
+                if j != problem.width - 1 and problem.grid[i][j + 1] == 0:
+                    neighbours.append((j + 1, i))
+                grap_new[current] = neighbours
     # Create V_I and v_F
     v_I = tuple(tuple(start) for start in problem.starts)
     v_W = []
@@ -48,7 +57,7 @@ def setup_benchmark(problem):
             v_W.append(())
     v_W = tuple(v_W)
     v_F = tuple(tuple(target) for target in problem.goals)
-    return graph, v_I, v_W, v_F
+    return grap_new, v_I, v_W, v_F
 
 
 class TestBenchmarks:
@@ -71,20 +80,20 @@ class TestBenchmarks:
         benchmark(6, 21)
 
     def test_benchmark_7(self):
-        benchmark(7, 346)
+        benchmark(7, 278)
 
     def test_benchmark_8(self):
-        benchmark(8, 1932)
+        benchmark(8, 1576)
 
     def test_benchmark_9(self):
-        benchmark(9, 2677)
+        benchmark(9, 2430)
 
     # TODO cant solve it within a decent time
     # def test_benchmark_10(self):
     #     benchmark(10, xx)
 
     def test_benchmark_11(self):
-        benchmark(11, 110)
+        benchmark(11, 100)
 
     def test_benchmark_12(self):
         benchmark(12, 110)
@@ -96,10 +105,10 @@ class TestBenchmarks:
         benchmark(14, 35)
 
     def test_benchmark_15(self):
-        benchmark(15, 76)
+        benchmark(15, 68)
 
     def test_benchmark_16(self):
-        benchmark(16, 76)
+        benchmark(16, 64)
 
     def test_benchmark_17(self):
         benchmark(17, 41)
