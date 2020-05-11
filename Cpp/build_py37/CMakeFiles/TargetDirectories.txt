@@ -1,0 +1,4 @@
+C:/Users/Jeroen/Documents/Research-Project/Cpp/build_py37/CMakeFiles/Mstar_cpp.dir
+C:/Users/Jeroen/Documents/Research-Project/Cpp/build_py37/CMakeFiles/ALL_BUILD.dir
+C:/Users/Jeroen/Documents/Research-Project/Cpp/build_py37/CMakeFiles/ZERO_CHECK.dir
+C:/Users/Jeroen/Documents/Research-Project/Cpp/build_py37/pybind11/CMakeFiles/ALL_BUILD.dir
