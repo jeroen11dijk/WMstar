@@ -2,7 +2,7 @@ import heapq
 import itertools
 from functools import lru_cache
 
-import networkx as nx
+from graph import dijkstra_predecessor_and_distance
 
 
 class Config:
@@ -42,11 +42,11 @@ class Mstar:
             targets_i = []
             for waypoint in v_W[i]:
                 if waypoint in graph:
-                    predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, waypoint)
+                    predecessor, distance = dijkstra_predecessor_and_distance(graph, waypoint)
                     policy_i.append(predecessor)
                     distance_i.append(distance)
                     targets_i.append(waypoint)
-            predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[i])
+            predecessor, distance = dijkstra_predecessor_and_distance(graph, v_F[i])
             policy_i.append(predecessor)
             distance_i.append(distance)
             targets_i.append(v_F[i])
