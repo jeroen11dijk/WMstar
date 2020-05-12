@@ -8,13 +8,28 @@
 
 namespace py = pybind11;
 
-int Jeroen(int a) {
-	return a;
+std::set<int> phi(std::vector<std::pair<int, int>> v_k) {
+	std::set<std::pair<int, int>> seen{};
+	std::set<std::pair<int, int>> collisions{};
+	std::set<int> res{};
+	for (std::pair<int, int> val : v_k) {
+		if (seen.count(val)) {
+			collisions.insert(val);
+		}
+		else {
+			seen.insert(val);
+		}
+	}
+	for (int i = 0; i != v_k.size(); i++) {
+		if (collisions.count(v_k[i])) {
+			res.insert(i);
+		}
+	}
+	return res;
 }
-
 
 PYBIND11_MODULE(Mstar_cpp, m) {
 
     m.doc() = "Car path utilities";
-	m.def("Jeroen", &Jeroen);
+	m.def("phi", &phi);
 }
