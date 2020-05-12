@@ -6,69 +6,12 @@
 #include <iostream>
 #include <vector>
 
+#include "Config_key.h"
 #include "Coordinate.h"
+#include "Queue_entry.h"
 
 using namespace std;
 namespace py = pybind11;
-
-class Config_key {
-public:
-	Coordinate coordinate;
-	vector<int> targets;
-	Config_key() {};
-	Config_key(Coordinate coordinate, vector<int> targets) {
-		this->coordinate = coordinate;
-		this->targets = targets;
-	}
-	friend ostream& operator<<(ostream& os, const Config_key &config_key);
-	friend bool operator== (const Config_key &ck1, const Config_key &ck2);
-};
-
-ostream& operator<<(ostream& os, const Config_key &config_key) {
-	std::string targets = "[";
-	for (int i = 0; i < config_key.targets.size(); ++i) {
-		targets.append(to_string(config_key.targets.at(i)));
-		if (i != config_key.targets.size() - 1) {
-			targets.append(", ");
-		}
-		else {
-			targets.append("]");
-		}
-	}
-	return os << "Coordinate: " << config_key.coordinate << ". And targets: " << targets;
-}
-
-bool operator== (const Config_key &ck1, const Config_key &ck2)
-{
-	return (ck1.coordinate == ck2.coordinate && ck1.targets == ck2.targets);
-}
-
-class Queue_entry {
-public:
-	int cost;
-	Config_key config_key;
-	Queue_entry(int cost, Config_key config_key) {
-		this->cost = cost;
-		this->config_key = config_key;
-	}
-	friend ostream& operator<<(ostream& os, const Queue_entry &queue_entry);
-	friend bool operator> (const Queue_entry &q1, const Queue_entry &q2);
-	friend bool operator== (const Queue_entry &q1, const Queue_entry &q2);
-};
-
-ostream& operator<<(ostream& os, const Queue_entry &queue_entry) {
-	return os << "[Cost: " << queue_entry.cost << ". And config_key: " << queue_entry.config_key << "]";
-}
-
-bool operator> (const Queue_entry &q1, const Queue_entry &q2)
-{
-	return q1.cost > q2.cost;
-}
-
-bool operator== (const Queue_entry &q1, const Queue_entry &q2)
-{
-	return (q1.cost == q2.cost && q1.config_key == q2.config_key);
-}
 
 
 struct coordinate_hash
