@@ -13,23 +13,6 @@
 using namespace std;
 namespace py = pybind11;
 
-
-struct coordinate_hash
-{
-	size_t operator() (const Coordinate &coordinate) const
-	{
-		return (coordinate.a * 0x1f1f1f1f) ^ coordinate.b;
-	}
-};
-
-struct config_key_hash
-{
-	size_t operator() (const Config_key &config_key) const
-	{
-		return (config_key.coordinate.a * 0x1f1f1f1f) ^ config_key.coordinate.b;
-	}
-};
-
 class Config_value {
 public:
 	int cost = INT_MAX;

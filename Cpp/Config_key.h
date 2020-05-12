@@ -32,3 +32,11 @@ bool operator== (const Config_key &ck1, const Config_key &ck2)
 {
 	return (ck1.coordinate == ck2.coordinate && ck1.targets == ck2.targets);
 }
+
+struct config_key_hash
+{
+	size_t operator() (const Config_key &config_key) const
+	{
+		return (config_key.coordinate.a * 0x1f1f1f1f) ^ config_key.coordinate.b;
+	}
+};

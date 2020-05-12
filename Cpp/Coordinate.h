@@ -21,3 +21,11 @@ bool operator== (const Coordinate &c1, const Coordinate &c2)
 {
 	return (c1.a == c1.a && c1.b == c1.b);
 }
+
+struct coordinate_hash
+{
+	size_t operator() (const Coordinate &coordinate) const
+	{
+		return (coordinate.a * 0x1f1f1f1f) ^ coordinate.b;
+	}
+};
