@@ -140,7 +140,7 @@ class Mstar:
             for v_m, v_m_target_indices in v_k_config.back_set:
                 self.backprop(v_m, v_m_target_indices, v_k_config.collisions)
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=65536)
     def get_edge_weight(self, v_k, v_l, target_indices):
         cost = 0
         for i in range(self.n_agents):
@@ -148,7 +148,7 @@ class Mstar:
                 cost += 1
         return cost
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=65536)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
         target_indices = target_indices
@@ -165,9 +165,17 @@ class Mstar:
 
 # Check for collisions
 # Credit to Hytak
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=65536)
 def phi(v_k):
-    return Cpp.Mstar_cpp.phi(v_k)
+    seen = set()
+    double = list()
+    for i, val in enumerate(v_k):
+        if val in seen:
+            double.append(val)
+        else:
+            seen.add(val)
+    double = set(double)
+    return [i for i, val in enumerate(v_k) if val in double]
 
 
 def euclidian_distance(a, b):
