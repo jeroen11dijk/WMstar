@@ -2,6 +2,8 @@ import heapq
 import itertools
 from functools import lru_cache
 
+import Cpp.Mstar_cpp
+
 from graph import dijkstra_predecessor_and_distance
 
 
@@ -70,7 +72,7 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in v_k_config.back_ptr])
                 return res, v_k_config.cost
-            if len(self.phi(v_k)) == 0:
+            if len(phi(v_k)) == 0:
                 V_k = self.get_limited_neighbours(v_k, target_indices)
                 for v_l in V_k:
                     v_l_target_indices = list(target_indices)
@@ -78,7 +80,7 @@ class Mstar:
                         if v_l[i] == self.targets[i][v_l_target_indices[i]] and v_l[i] != self.v_F[i]:
                             v_l_target_indices[i] += 1
                     v_l_target_indices = tuple(v_l_target_indices)
-                    v_l_collisions = self.phi(v_l)
+                    v_l_collisions = phi(v_l)
                     if (v_l, v_l_target_indices) not in configurations:
                         configurations[(v_l, v_l_target_indices)] = Config()
                     v_l_config = configurations[(v_l, v_l_target_indices)]
@@ -146,20 +148,6 @@ class Mstar:
                 cost += 1
         return cost
 
-    # Check for collisions
-    # Credit to Hytak
-    @lru_cache(maxsize=None)
-    def phi(self, v_k):
-        seen = set()
-        double = list()
-        for i, val in enumerate(v_k):
-            if val in seen:
-                double.append(val)
-            else:
-                seen.add(val)
-        double = set(double)
-        return [i for i, val in enumerate(v_k) if val in double]
-
     @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
@@ -173,6 +161,13 @@ class Mstar:
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
         return cost
+
+
+# Check for collisions
+# Credit to Hytak
+@lru_cache(maxsize=None)
+def phi(v_k):
+    return Cpp.Mstar_cpp.phi(v_k)
 
 
 def euclidian_distance(a, b):
