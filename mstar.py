@@ -2,7 +2,7 @@ import heapq
 import itertools
 from functools import lru_cache
 
-import Mstar_cpp
+import Cpp.Mstar_cpp
 
 from graph import dijkstra_predecessor_and_distance
 
@@ -167,7 +167,7 @@ class Mstar:
 # Credit to Hytak
 @lru_cache(maxsize=None)
 def phi(v_k):
-    return Mstar_cpp.phi(v_k)
+    return Cpp.Mstar_cpp.phi(v_k)
 
 
 def euclidian_distance(a, b):
