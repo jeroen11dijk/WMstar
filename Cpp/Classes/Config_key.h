@@ -6,37 +6,53 @@ using namespace std;
 
 class Config_key {
 public:
-	Coordinate coordinate;
+	vector<Coordinate> coordinates;
 	vector<int> targets;
 	Config_key() {};
-	Config_key(Coordinate coordinate, vector<int> targets) : coordinate(coordinate), targets(targets) {};
+	Config_key(vector<Coordinate> coordinates, vector<int> targets) : coordinates(coordinates), targets(targets) {};
 	friend ostream& operator<<(ostream& os, const Config_key &config_key);
 	friend bool operator== (const Config_key &ck1, const Config_key &ck2);
 };
 
 ostream& operator<<(ostream& os, const Config_key &config_key) {
+	std::string coordinates = "[";
 	std::string targets = "[";
 	for (int i = 0; i < config_key.targets.size(); ++i) {
-		targets.append(to_string(config_key.targets.at(i)));
+		Coordinate coordinate = config_key.coordinates[i];
+		coordinates.append("(" + to_string(coordinate.a) + ", " + to_string(coordinate.b) + ")");
+		targets.append(to_string(config_key.targets[i]));
 		if (i != config_key.targets.size() - 1) {
+			coordinates.append(", ");
 			targets.append(", ");
 		}
 		else {
+			coordinates.append("]");
 			targets.append("]");
 		}
 	}
-	return os << "Coordinate: " << config_key.coordinate << ". And targets: " << targets;
+	return os << "Coordinate: " << coordinates << ". And targets: " << targets;
 }
 
 bool operator== (const Config_key &ck1, const Config_key &ck2)
 {
-	return (ck1.coordinate == ck2.coordinate && ck1.targets == ck2.targets);
+	return (ck1.coordinates == ck2.coordinates && ck1.targets == ck2.targets);
 }
 
 struct config_key_hash
 {
 	size_t operator() (const Config_key &config_key) const
 	{
-		return (config_key.coordinate.a * 0x1f1f1f1f) ^ config_key.coordinate.b;
+		std::size_t hash = 0;
+		for (auto i = config_key.coordinates.begin(); i != config_key.coordinates.end(); ++i)
+		{
+			hash += (i->a * 0x1f1f1f1f) ^ i->b;
+		}
+		int sum = 0;
+		for (auto& target : config_key.targets) {
+			sum += target;
+		}
+		std::hash<int> hasher;
+		hash += hasher(sum);
+		return hash;
 	}
 };

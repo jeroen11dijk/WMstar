@@ -66,15 +66,14 @@ class Mstar:
         while len(self.open) > 0:
             v_k, target_indices = heapq.heappop(self.open)[1]
             v_k_config = configurations[(v_k, target_indices)]
-            if v_k == self.v_F and all(target_indices[i] + 1 == len(self.targets[i]) for i in range(len(self.v_F))):
+            if v_k == self.v_F and all(target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 v_k_config.back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in v_k_config.back_ptr])
                 return res, v_k_config.cost
             if len(phi(v_k)) == 0:
-                V_k = self.get_limited_neighbours(v_k, target_indices)
-                for v_l in V_k:
+                for v_l in self.get_limited_neighbours(v_k, target_indices):
                     v_l_target_indices = list(target_indices)
                     for i in range(self.n_agents):
                         if v_l[i] == self.targets[i][v_l_target_indices[i]] and v_l[i] != self.v_F[i]:
@@ -111,12 +110,11 @@ class Mstar:
                 for nbr in self.graph[vi_k]:
                     options_i.append(nbr)
             else:
-                source = v_k[i]
                 target_index = target_indices[i]
                 policy = self.policies[i][target_index]
                 successors = policy[v_k[i]]
                 if len(successors) == 0:
-                    options_i.append(source)
+                    options_i.append(vi_k)
                 else:
                     for successor in successors:
                         options_i.append(successor)
@@ -151,7 +149,6 @@ class Mstar:
     @lru_cache(maxsize=65536)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
-        target_indices = target_indices
         for i in range(self.n_agents):
             target_index = target_indices[i]
             target = self.targets[i]

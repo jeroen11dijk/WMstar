@@ -11,6 +11,7 @@ public:
 	Coordinate(int a, int b) : a(a), b(b) {};
 	friend ostream& operator<<(ostream& os, const Coordinate &coordinate);
 	friend bool operator== (const Coordinate &c1, const Coordinate &c2);
+	friend bool operator!= (const Coordinate &c1, const Coordinate &c2);
 };
 
 ostream& operator<<(ostream& os, const Coordinate &coordinate) {
@@ -19,7 +20,12 @@ ostream& operator<<(ostream& os, const Coordinate &coordinate) {
 
 bool operator== (const Coordinate &c1, const Coordinate &c2)
 {
-	return (c1.a == c1.a && c1.b == c1.b);
+	return (c1.a == c2.a && c1.b == c2.b);
+}
+
+bool operator!= (const Coordinate &c1, const Coordinate &c2)
+{
+	return (c1.a != c2.a || c1.b != c2.b);
 }
 
 struct coordinate_hash
