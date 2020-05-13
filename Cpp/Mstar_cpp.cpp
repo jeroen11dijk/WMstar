@@ -6,21 +6,13 @@
 #include <iostream>
 #include <vector>
 
-#include "Config_key.h"
-#include "Coordinate.h"
-#include "Queue_entry.h"
+#include "classes/Config_key.h"
+#include "classes/Config_value.h"
+#include "classes/Coordinate.h"
+#include "classes/Queue_entry.h"
 
 using namespace std;
 namespace py = pybind11;
-
-class Config_value {
-public:
-	int cost = INT_MAX;
-	int heuristic = INT_MAX;
-	set<int> collisions{};
-	vector<pair<Coordinate, vector<int>>> back_set{};
-	vector<Coordinate> back_ptr{};
-};
 
 class Mstar {
 public:
@@ -34,33 +26,6 @@ public:
 	vector<vector<Coordinate>> targets;
 	priority_queue<Queue_entry, vector<Queue_entry>, greater<Queue_entry>> open;
 };
-
-void test_queue() {
-	priority_queue<Queue_entry, vector<Queue_entry>, greater<Queue_entry>> open;
-	vector<int> vect{ 0, 1, 2 };
-	Coordinate c1 = Coordinate(0, 0);
-	Coordinate c2 = Coordinate(0, 1);
-	Coordinate c3 = Coordinate(1, 0);
-	Coordinate c4 = Coordinate(1, 1);
-	Queue_entry entry1 = Queue_entry(4, Config_key(c1, vect));
-	Queue_entry entry2 = Queue_entry(3, Config_key(c2, vect));
-	Queue_entry entry3 = Queue_entry(2, Config_key(c3, vect));
-	Queue_entry entry4 = Queue_entry(1, Config_key(c4, vect));
-	open.push(entry1);
-	open.push(entry2);
-	open.push(entry3);
-	open.push(entry4);
-	cout << c1 << endl;
-	cout << c2 << endl;
-	cout << c3 << endl;
-	cout << c4 << endl;
-	cout << (c1.a == 0) << endl;
-	while (!open.empty()) {
-		cout << open.top() << endl;
-		open.pop();
-	}
-	cout << '\n';
-}
 
 unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> create_graph(vector<vector<int>> grid) {
 	unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> graph;
@@ -113,7 +78,6 @@ PYBIND11_MODULE(Mstar_cpp, m) {
 	m.doc() = "Mstar in Cpp";
 	m.def("phi", &phi);
 	m.def("create_graph", &create_graph);
-	m.def("test_queue", &test_queue);
 
 	py::class_<Config_value>(m, "Config")
 		.def(py::init<>())
