@@ -184,6 +184,7 @@ public:
 		while (!open.empty()) {
 			Config_key v_k = open.top().config_key;
 			open.pop();
+			cout << v_k << endl;
 			// TODO check for waypoints
 			if (v_k.coordinates == v_F) {
 				bool visited_waypoints = true;
@@ -250,13 +251,19 @@ public:
 	}
 
 	void backprop(Config_key v_k, set<int> C_l) {
-		Config_value* v_k_config = &configurations[v_k];
-		if (includes(C_l.begin(), C_l.end(), v_k_config->collisions.begin(), v_k_config->collisions.end())) {
-			v_k_config->collisions.insert(C_l.begin(), C_l.end());
+		bool isSubset = true;
+		for (auto index : C_l) {
+			if (!configurations[v_k].collisions.count(index)) {
+				isSubset = false;
+				break;
+			}
+		}
+		if (isSubset) {
+			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
-			open.push(Queue_entry(v_k_config->cost + heuristic, v_k));
-			for (Config_key v_m : v_k_config->back_set) {
-				backprop(v_m, v_k_config->collisions);
+			open.push(Queue_entry(configurations[v_k].cost + heuristic, v_k));
+			for (Config_key v_m : configurations[v_k].back_set) {
+				backprop(v_m, configurations[v_k].collisions);
 			}
 		}
 	}
