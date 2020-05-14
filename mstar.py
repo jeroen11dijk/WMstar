@@ -72,14 +72,14 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in v_k_config.back_ptr])
                 return res, v_k_config.cost
-            if len(phi(v_k)) == 0:
+            if len(Cpp.Mstar_cpp.python_phi(v_k, [(-1, -1)])) == 0:
                 for v_l in self.get_limited_neighbours(v_k, target_indices):
                     v_l_target_indices = list(target_indices)
                     for i in range(self.n_agents):
                         if v_l[i] == self.targets[i][v_l_target_indices[i]] and v_l[i] != self.v_F[i]:
                             v_l_target_indices[i] += 1
                     v_l_target_indices = tuple(v_l_target_indices)
-                    v_l_collisions = phi(v_l)
+                    v_l_collisions = Cpp.Mstar_cpp.python_phi(v_l, v_k)
                     if (v_l, v_l_target_indices) not in configurations:
                         configurations[(v_l, v_l_target_indices)] = Config()
                     v_l_config = configurations[(v_l, v_l_target_indices)]
@@ -138,7 +138,7 @@ class Mstar:
             for v_m, v_m_target_indices in v_k_config.back_set:
                 self.backprop(v_m, v_m_target_indices, v_k_config.collisions)
 
-    @lru_cache(maxsize=65536)
+    @lru_cache(maxsize=None)
     def get_edge_weight(self, v_k, v_l, target_indices):
         cost = 0
         for i in range(self.n_agents):
@@ -146,7 +146,7 @@ class Mstar:
                 cost += 1
         return cost
 
-    @lru_cache(maxsize=65536)
+    @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
         for i in range(self.n_agents):
@@ -161,18 +161,23 @@ class Mstar:
 
 
 # Check for collisions
-# Credit to Hytak
-@lru_cache(maxsize=65536)
-def phi(v_k):
+def phi(v_l, v_k=None):
     seen = set()
-    double = list()
-    for i, val in enumerate(v_k):
+    double = []
+    res = []
+    for i, val in enumerate(v_l):
         if val in seen:
             double.append(val)
         else:
             seen.add(val)
+        if v_k is not None:
+            if v_l[i] in v_k:
+                v_k_index = v_k.index(v_l[i])
+                if v_k[i] == v_l[v_k_index] and i != v_k_index:
+                    res.append(i)
     double = set(double)
-    return [i for i, val in enumerate(v_k) if val in double]
+    res.extend([i for i, val in enumerate(v_l) if val in double])
+    return res
 
 
 def euclidian_distance(a, b):
