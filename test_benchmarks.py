@@ -65,19 +65,19 @@ class TestBenchmarks:
         benchmark(1, 26)
 
     def test_benchmark_2(self):
-        benchmark(2, 38)
+        benchmark(2, 48)
 
     def test_benchmark_3(self):
         benchmark(3, 73)
 
     def test_benchmark_4(self):
-        benchmark(4, 17)
+        benchmark(4, 26)
 
     def test_benchmark_5(self):
-        benchmark(5, 110)
+        benchmark(5, 119)
 
     def test_benchmark_6(self):
-        benchmark(6, 21)
+        benchmark(6, 27)
 
     def test_benchmark_7(self):
         benchmark(7, 278)
@@ -86,7 +86,7 @@ class TestBenchmarks:
         benchmark(8, 1576)
 
     def test_benchmark_9(self):
-        benchmark(9, 2430)
+        benchmark(9, 2441)
 
     # TODO cant solve it within a decent time
     # def test_benchmark_10(self):
@@ -96,19 +96,22 @@ class TestBenchmarks:
         benchmark(11, 100)
 
     def test_benchmark_12(self):
-        benchmark(12, 110)
+        benchmark(12, 115)
 
     def test_benchmark_13(self):
-        benchmark(13, 43)
+        benchmark(13, 52)
 
     def test_benchmark_14(self):
         benchmark(14, 35)
 
     def test_benchmark_15(self):
-        benchmark(15, 68)
+        benchmark(15, 74)
 
     def test_benchmark_16(self):
-        benchmark(16, 64)
+        benchmark(16, 70)
 
     def test_benchmark_17(self):
-        benchmark(17, 41)
+        benchmark(17, 49)
+
+    def test_benchmark_18(self):
+        benchmark(18, 55)
