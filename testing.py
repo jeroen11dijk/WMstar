@@ -3,7 +3,7 @@ from mstar import Mstar
 from test_benchmarks import setup_benchmark
 from Cpp.Mstar_cpp import *
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 18, "M*", "Python edge conflicts", False)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 5, "M*", "Python edge conflicts", True)
 for problem in benchmarker:
     for i in range(len(problem.waypoints)):
         if len(problem.waypoints[i]) == 0:
