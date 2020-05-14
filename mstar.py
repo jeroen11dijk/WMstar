@@ -2,7 +2,9 @@ import heapq
 import itertools
 from functools import lru_cache
 
-import networkx as nx
+import Cpp.Mstar_cpp
+
+from graph import dijkstra_predecessor_and_distance
 
 
 class Config:
@@ -42,11 +44,11 @@ class Mstar:
             targets_i = []
             for waypoint in v_W[i]:
                 if waypoint in graph:
-                    predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, waypoint)
+                    predecessor, distance = dijkstra_predecessor_and_distance(graph, waypoint)
                     policy_i.append(predecessor)
                     distance_i.append(distance)
                     targets_i.append(waypoint)
-            predecessor, distance = nx.dijkstra_predecessor_and_distance(graph, v_F[i])
+            predecessor, distance = dijkstra_predecessor_and_distance(graph, v_F[i])
             policy_i.append(predecessor)
             distance_i.append(distance)
             targets_i.append(v_F[i])
@@ -64,21 +66,20 @@ class Mstar:
         while len(self.open) > 0:
             v_k, target_indices = heapq.heappop(self.open)[1]
             v_k_config = configurations[(v_k, target_indices)]
-            if v_k == self.v_F and all(target_indices[i] + 1 == len(self.targets[i]) for i in range(len(self.v_F))):
+            if v_k == self.v_F and all(target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 v_k_config.back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in v_k_config.back_ptr])
                 return res, v_k_config.cost
-            if len(self.phi(v_k)) == 0:
-                V_k = self.get_limited_neighbours(v_k, target_indices)
-                for v_l in V_k:
+            if len(phi(v_k)) == 0:
+                for v_l in self.get_limited_neighbours(v_k, target_indices):
                     v_l_target_indices = list(target_indices)
                     for i in range(self.n_agents):
                         if v_l[i] == self.targets[i][v_l_target_indices[i]] and v_l[i] != self.v_F[i]:
                             v_l_target_indices[i] += 1
                     v_l_target_indices = tuple(v_l_target_indices)
-                    v_l_collisions = self.phi(v_l)
+                    v_l_collisions = phi(v_l, v_k)
                     if (v_l, v_l_target_indices) not in configurations:
                         configurations[(v_l, v_l_target_indices)] = Config()
                     v_l_config = configurations[(v_l, v_l_target_indices)]
@@ -109,12 +110,11 @@ class Mstar:
                 for nbr in self.graph[vi_k]:
                     options_i.append(nbr)
             else:
-                source = v_k[i]
                 target_index = target_indices[i]
                 policy = self.policies[i][target_index]
                 successors = policy[v_k[i]]
                 if len(successors) == 0:
-                    options_i.append(source)
+                    options_i.append(vi_k)
                 else:
                     for successor in successors:
                         options_i.append(successor)
@@ -146,24 +146,9 @@ class Mstar:
                 cost += 1
         return cost
 
-    # Check for collisions
-    # Credit to Hytak
-    @lru_cache(maxsize=None)
-    def phi(self, v_k):
-        seen = set()
-        double = list()
-        for i, val in enumerate(v_k):
-            if val in seen:
-                double.append(val)
-            else:
-                seen.add(val)
-        double = set(double)
-        return [i for i, val in enumerate(v_k) if val in double]
-
     @lru_cache(maxsize=None)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
-        target_indices = target_indices
         for i in range(self.n_agents):
             target_index = target_indices[i]
             target = self.targets[i]
@@ -173,6 +158,28 @@ class Mstar:
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
         return cost
+
+
+# Check for collisions
+# Credit to Hytak
+@lru_cache(maxsize=None)
+def phi(v_l, v_k=None):
+    seen = set()
+    double = []
+    res = []
+    for i, val in enumerate(v_l):
+        if val in seen:
+            double.append(val)
+        else:
+            seen.add(val)
+        if v_k is not None:
+            if v_l[i] in v_k:
+                v_k_index = v_k.index(v_l[i])
+                if v_k[i] == v_l[v_k_index] and i != v_k_index:
+                    res.append(i)
+    double = set(double)
+    res.extend([i for i, val in enumerate(v_l) if val in double])
+    return res
 
 
 def euclidian_distance(a, b):
