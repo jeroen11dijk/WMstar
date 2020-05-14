@@ -12,6 +12,7 @@ public:
 	Queue_entry(int cost, Config_key config_key) : cost(cost), config_key(config_key) {};
 	friend ostream& operator<<(ostream& os, const Queue_entry &queue_entry);
 	friend bool operator> (const Queue_entry &q1, const Queue_entry &q2);
+	friend bool operator< (const Queue_entry &q1, const Queue_entry &q2);
 	friend bool operator== (const Queue_entry &q1, const Queue_entry &q2);
 };
 
@@ -22,6 +23,11 @@ ostream& operator<<(ostream& os, const Queue_entry &queue_entry) {
 bool operator> (const Queue_entry &q1, const Queue_entry &q2)
 {
 	return q1.cost > q2.cost;
+}
+
+bool operator< (const Queue_entry &q1, const Queue_entry &q2)
+{
+	return q1.cost < q2.cost;
 }
 
 bool operator== (const Queue_entry &q1, const Queue_entry &q2)
