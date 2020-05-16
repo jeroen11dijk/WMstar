@@ -9,12 +9,12 @@ public:
 	vector<Coordinate> coordinates;
 	vector<int> targets;
 	Config_key() {};
-	Config_key(vector<Coordinate> coordinates, vector<int> targets) : coordinates(coordinates), targets(targets) {};
+	Config_key(vector<Coordinate> & coordinates, vector<int> & targets) : coordinates(coordinates), targets(targets) {};
 	friend ostream& operator<<(ostream& os, const Config_key &config_key);
 	friend bool operator== (const Config_key &ck1, const Config_key &ck2);
 };
 
-ostream& operator<<(ostream& os, const Config_key &config_key) {
+ostream& operator<<(ostream &os, const Config_key &config_key) {
 	std::string coordinates = "[";
 	std::string targets = "[";
 	for (int i = 0; i < config_key.targets.size(); ++i) {

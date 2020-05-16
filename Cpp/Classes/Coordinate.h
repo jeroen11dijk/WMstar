@@ -8,13 +8,13 @@ public:
 	int a;
 	int b;
 	Coordinate() {};
-	Coordinate(int a, int b) : a(a), b(b) {};
+	Coordinate(int &a, int &b) : a(a), b(b) {};
 	friend ostream& operator<<(ostream& os, const Coordinate &coordinate);
 	friend bool operator== (const Coordinate &c1, const Coordinate &c2);
 	friend bool operator!= (const Coordinate &c1, const Coordinate &c2);
 };
 
-ostream& operator<<(ostream& os, const Coordinate &coordinate) {
+ostream& operator<<(ostream &os, const Coordinate &coordinate) {
 	return os << "(" << coordinate.a << ", " << coordinate.b << ")";
 }
 

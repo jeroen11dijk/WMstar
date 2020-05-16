@@ -16,7 +16,7 @@ public:
 	friend bool operator== (const Queue_entry &q1, const Queue_entry &q2);
 };
 
-ostream& operator<<(ostream& os, const Queue_entry &queue_entry) {
+ostream& operator<<(ostream &os, const Queue_entry &queue_entry) {
 	return os << "[Cost: " << queue_entry.cost << ". And config_key: " << queue_entry.config_key << "]";
 }
 

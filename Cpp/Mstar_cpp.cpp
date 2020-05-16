@@ -102,16 +102,20 @@ unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> create_graph(vect
 				Coordinate current = Coordinate(j, i);
 				vector<Coordinate> neighbours;
 				if (i != 0 && grid[i - 1][j] == 0) {
-					neighbours.push_back(Coordinate(j, i - 1));
+					int up = i - 1;
+					neighbours.push_back(Coordinate(j, up));
 				}
 				if (j != 0 && grid[i][j - 1] == 0) {
-					neighbours.push_back(Coordinate(j - 1, i));
+					int left = j - 1;
+					neighbours.push_back(Coordinate(left, i));
 				}
 				if (i != grid.size() - 1 && grid[i + 1][j] == 0) {
-					neighbours.push_back(Coordinate(j, i + 1));
+					int down = i + 1;
+					neighbours.push_back(Coordinate(j, down));
 				}
 				if (j != grid[0].size() - 1 && grid[i][j + 1] == 0) {
-					neighbours.push_back(Coordinate(j + 1, i));
+					int right = j + 1;
+					neighbours.push_back(Coordinate(right, i));
 				}
 				graph[current] = neighbours;
 			}
