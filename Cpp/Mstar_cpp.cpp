@@ -10,6 +10,7 @@
 #include "classes/Config_key.h"
 #include "classes/Config_value.h"
 #include "classes/Coordinate.h"
+#include "classes/Timer.h"
 #include "classes/Queue_entry.h"
 
 using namespace std;
@@ -147,6 +148,12 @@ public:
 	vector<vector<Coordinate>> targets;
 	priority_queue<Queue_entry, vector<Queue_entry>, greater<Queue_entry>> open;
 
+	timer time = timer();
+	float get_limited_neighbours_time = 0.0f;
+	float backprop_time = 0.0f;
+	float get_edge_weight_time = 0.0f;
+	float heuristic_configuration_time = 0.0f;
+
 	Mstar_cpp(vector<vector<int>> & grid, vector<pair<int, int>> & v_I_a, vector<vector<pair<int, int>>> & v_W_a, vector<pair<int, int>> & v_F_a) {
 		n_agents = v_I_a.size();
 		graph = create_graph(grid);
@@ -156,7 +163,6 @@ public:
 		for (pair<int, int> & goal : v_F_a) {
 			v_F.push_back(Coordinate(goal.first, goal.second));
 		}
-		// TODO Sort v_W
 		for (vector<pair<int, int>> waypoints : v_W_a) {
 			vector<Coordinate> waypoints_i;
 			for (pair<int, int> waypoint : waypoints) {
@@ -206,6 +212,8 @@ public:
 	}
 
 	pair<vector<vector<pair<int, int>>>, int> solve() {
+		timer solve = timer();
+		solve.start();
 		while (!open.empty()) {
 			Config_key v_k = open.top().config_key;
 			open.pop();
@@ -229,6 +237,12 @@ public:
 						}
 						res.push_back(res_i);
 					}
+					solve.stop();
+					cout << "get limited neighbours took: " << get_limited_neighbours_time << ". Which is hopefully the title of your sextape" << endl;
+					cout << "backprop took: " << backprop_time << ". Which is hopefully the title of your sextape" << endl;
+					cout << "get_edge_weight took: " << get_edge_weight_time << ". Which is hopefully the title of your sextape" << endl;
+					cout << "heuristic_configuration took: " << heuristic_configuration_time << ". Which is hopefully the title of your sextape" << endl;
+					cout << "solve took: " << solve.elapsed() << ". Which is hopefully the title of your sextape" << endl;
 					return make_pair(res, configurations[v_k].cost);
 				}
 			}
@@ -247,7 +261,10 @@ public:
 					}
 					configurations[v_l_key].collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
 					configurations[v_l_key].back_set.push_back(v_k);
+					time.start();
 					backprop(v_k, configurations[v_l_key].collisions);
+					time.stop();
+					backprop_time += time.elapsed();
 					int f = get_edge_weight(v_k, v_l_key);
 					int new_cost_v_l = configurations[v_k].cost + f;
 					int old_cost_v_l = configurations[v_l_key].cost;
@@ -265,12 +282,15 @@ public:
 	}
 
 	int get_edge_weight(Config_key & v_k, Config_key & v_l) {
+		time.start();
 		int cost = 0;
 		for (int i = 0; i != n_agents; i++) {
 			if (!(v_k.coordinates[i] == v_l.coordinates[i] && v_k.coordinates[i] == v_F[i] && v_l.targets[i] == targets[i].size() - 1)) {
 				cost++;
 			}
 		}
+		time.stop();
+		get_edge_weight_time += time.elapsed();
 		return cost;
 	}
 
@@ -293,6 +313,7 @@ public:
 	}
 
 	vector<vector<Coordinate>> get_limited_neighbours(Config_key & v_k) {
+		time.start();
 		vector<vector<Coordinate>> options;
 		for (int i = 0; i != n_agents; i++) {
 			Coordinate source = v_k.coordinates[i];
@@ -324,9 +345,12 @@ public:
 		else {
 			return cart_product(options);
 		}
+		time.stop();
+		get_limited_neighbours_time += time.elapsed();
 	}
 
 	int heuristic_configuration(Config_key & v_k) {
+		time.start();
 		int cost = 0;
 		for (int i = 0; i != n_agents; i++) {
 			int target_index = v_k.targets[i];
@@ -338,14 +362,16 @@ public:
 				target_index++;
 			}
 		}
+		time.stop();
+		heuristic_configuration_time += time.elapsed();
 		return cost;
 	}
 };
 
-std::set<int> python_phi(std::vector<std::pair<int, int>> & v_l, std::vector<std::pair<int, int>> & v_k) {
-	std::set<std::pair<int, int>> seen{};
-	std::set<std::pair<int, int>> collisions{};
-	std::set<int> res{};
+set<int> python_phi(vector<pair<int, int>> & v_l, vector<pair<int, int>> & v_k) {
+	set<pair<int, int>> seen{};
+	set<pair<int, int>> collisions{};
+	set<int> res{};
 	for (int i = 0; i != v_l.size(); i++) {
 		if (seen.count(v_l[i])) {
 			collisions.insert(v_l[i]);
@@ -373,7 +399,6 @@ PYBIND11_MODULE(Mstar_cpp, m) {
 
 	m.doc() = "Mstar in Cpp";
 	m.def("python_phi", &python_phi);
-	m.def("create_graph", &create_graph);
 
 	py::class_<Mstar_cpp>(m, "Mstar_cpp")
 		.def(py::init<vector<vector<int>>, vector<pair<int, int>>, vector<vector<pair<int, int>>>, vector<pair<int, int>>>())

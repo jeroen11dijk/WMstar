@@ -1,7 +1,7 @@
 import heapq
 import itertools
 from functools import lru_cache
-from profilehooks import profile
+
 import Cpp.Mstar_cpp
 
 from graph import dijkstra_predecessor_and_distance
@@ -138,15 +138,13 @@ class Mstar:
             for v_m, v_m_target_indices in v_k_config.back_set:
                 self.backprop(v_m, v_m_target_indices, v_k_config.collisions)
 
-    @lru_cache(maxsize=65536)
     def get_edge_weight(self, v_k, v_l, target_indices):
         cost = 0
         for i in range(self.n_agents):
-            if not (v_k[i] == v_l[i] == self.v_F[i] and target_indices[i] == len(self.targets[i]) - 1):
+            if not (v_k[i] == v_l[i] == self.targets[i][-1] and target_indices[i] == len(self.targets[i]) - 1):
                 cost += 1
         return cost
 
-    @lru_cache(maxsize=65536)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
         for i in range(self.n_agents):
@@ -158,6 +156,7 @@ class Mstar:
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
         return cost
+
 
 def euclidian_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
