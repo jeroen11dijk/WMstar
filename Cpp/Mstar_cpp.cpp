@@ -18,7 +18,7 @@ namespace py = pybind11;
 class CompareTuple
 {
 public:
-	bool operator()(tuple<int, int, Coordinate> t1, tuple<int, int, Coordinate> t2) {
+	bool operator()(tuple<int, int, Coordinate> & t1, tuple<int, int, Coordinate> & t2) {
 		if (get<0>(t1) == get<0>(t2)) {
 			return get<1>(t1) > get<1>(t2);
 		}
@@ -32,7 +32,7 @@ int euclidian_distance(Coordinate a, Coordinate b) {
 	return abs(a.a - b.a) + abs(a.b - b.b);
 }
 
-set<int> phi(vector<Coordinate> v_l, vector<Coordinate> v_k = vector<Coordinate>{}) {
+set<int> phi(vector<Coordinate> v_l, vector<Coordinate> & v_k = vector<Coordinate>{}) {
 	unordered_set<Coordinate, coordinate_hash> seen{};
 	unordered_set<Coordinate, coordinate_hash> collisions{};
 	set<int> res{};
@@ -59,7 +59,8 @@ set<int> phi(vector<Coordinate> v_l, vector<Coordinate> v_k = vector<Coordinate>
 	return res;
 }
 
-pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_map<Coordinate, int, coordinate_hash>> dijkstra_predecessor_and_distance(unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> graph, Coordinate source) {
+pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_map<Coordinate, int, coordinate_hash>>
+dijkstra_predecessor_and_distance(unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> & graph, Coordinate source) {
 	unordered_map<Coordinate, int, coordinate_hash> distances;
 	unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> pred = { {source, vector<Coordinate>{}} };
 	unordered_map<Coordinate, int, coordinate_hash> seen = { {source, 0} };
@@ -76,7 +77,7 @@ pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_m
 		}
 		distances[node] = distance;
 		vector<Coordinate> neighbours = graph[node];
-		for (Coordinate neighbour : neighbours) {
+		for (Coordinate & neighbour : neighbours) {
 			int neighbour_distance = distance + 1;
 			if (!seen.count(neighbour) || neighbour_distance < seen[neighbour]) {
 				seen[neighbour] = neighbour_distance;
@@ -92,7 +93,7 @@ pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_m
 	return make_pair(pred, distances);
 }
 
-unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> create_graph(vector<vector<int>> grid) {
+unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> create_graph(vector<vector<int>> & grid) {
 	unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> graph;
 	for (int i = 0; i != grid.size(); i++) {
 		for (int j = 0; j != grid[0].size(); j++) {
@@ -146,13 +147,13 @@ public:
 	vector<vector<Coordinate>> targets;
 	priority_queue<Queue_entry, vector<Queue_entry>, greater<Queue_entry>> open;
 
-	Mstar_cpp(vector<vector<int>> grid, vector<pair<int, int>> v_I_a, vector<vector<pair<int, int>>> v_W_a, vector<pair<int, int>> v_F_a) {
+	Mstar_cpp(vector<vector<int>> & grid, vector<pair<int, int>> & v_I_a, vector<vector<pair<int, int>>> & v_W_a, vector<pair<int, int>> & v_F_a) {
 		n_agents = v_I_a.size();
 		graph = create_graph(grid);
-		for (pair<int, int> start : v_I_a) {
+		for (pair<int, int> & start : v_I_a) {
 			v_I.push_back(Coordinate(start.first, start.second));
 		}
-		for (pair<int, int> goal : v_F_a) {
+		for (pair<int, int> & goal : v_F_a) {
 			v_F.push_back(Coordinate(goal.first, goal.second));
 		}
 		// TODO Sort v_W
@@ -223,7 +224,7 @@ public:
 					for (int i = 0; i != n_agents; i++) {
 						bool visited_waypoints = true;
 						vector<pair<int, int>> res_i;
-						for (auto config : configurations[v_k].back_ptr) {
+						for (auto & config : configurations[v_k].back_ptr) {
 							res_i.push_back(make_pair(config[i].a, config[i].b));
 						}
 						res.push_back(res_i);
@@ -232,7 +233,7 @@ public:
 				}
 			}
 			if (phi(v_k.coordinates).size() == 0) {
-				for (vector<Coordinate> v_l : get_limited_neighbours(v_k)) {
+				for (vector<Coordinate> & v_l : get_limited_neighbours(v_k)) {
 					vector<int> v_l_target_indices = v_k.targets;
 					for (int i = 0; i != n_agents; i++) {
 						if (v_l[i] == targets[i][v_l_target_indices[i]] && v_l[i] != v_F[i]) {
@@ -263,7 +264,7 @@ public:
 		cout << "No path exists, or I am an idiot";
 	}
 
-	int get_edge_weight(Config_key v_k, Config_key v_l) {
+	int get_edge_weight(Config_key & v_k, Config_key & v_l) {
 		int cost = 0;
 		for (int i = 0; i != n_agents; i++) {
 			if (!(v_k.coordinates[i] == v_l.coordinates[i] && v_k.coordinates[i] == v_F[i] && v_l.targets[i] == targets[i].size() - 1)) {
@@ -273,9 +274,9 @@ public:
 		return cost;
 	}
 
-	void backprop(Config_key v_k, set<int> C_l) {
+	void backprop(Config_key & v_k, set<int> & C_l) {
 		bool isSubset = true;
-		for (auto index : C_l) {
+		for (auto & index : C_l) {
 			if (!configurations[v_k].collisions.count(index)) {
 				isSubset = false;
 				break;
@@ -285,13 +286,13 @@ public:
 			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
 			open.push(Queue_entry(configurations[v_k].cost + heuristic, v_k));
-			for (Config_key v_m : configurations[v_k].back_set) {
+			for (Config_key & v_m : configurations[v_k].back_set) {
 				backprop(v_m, configurations[v_k].collisions);
 			}
 		}
 	}
 
-	vector<vector<Coordinate>> get_limited_neighbours(Config_key v_k) {
+	vector<vector<Coordinate>> get_limited_neighbours(Config_key & v_k) {
 		vector<vector<Coordinate>> options;
 		for (int i = 0; i != n_agents; i++) {
 			Coordinate source = v_k.coordinates[i];
@@ -299,7 +300,7 @@ public:
 			if (configurations[v_k].collisions.count(i)) {
 				// Add all the neighbours
 				options_i.push_back(source);
-				for (auto nbr : graph[source]) {
+				for (auto & nbr : graph[source]) {
 					options_i.push_back(nbr);
 				}
 			}
@@ -310,7 +311,7 @@ public:
 					options_i.push_back(source);
 				}
 				else {
-					for (auto successor : successors) {
+					for (auto & successor : successors) {
 						options_i.push_back(successor);
 					}
 				}
@@ -325,7 +326,7 @@ public:
 		}
 	}
 
-	int heuristic_configuration(Config_key v_k) {
+	int heuristic_configuration(Config_key & v_k) {
 		int cost = 0;
 		for (int i = 0; i != n_agents; i++) {
 			int target_index = v_k.targets[i];
@@ -341,7 +342,7 @@ public:
 	}
 };
 
-std::set<int> python_phi(std::vector<std::pair<int, int>> v_l, std::vector<std::pair<int, int>> v_k) {
+std::set<int> python_phi(std::vector<std::pair<int, int>> & v_l, std::vector<std::pair<int, int>> & v_k) {
 	std::set<std::pair<int, int>> seen{};
 	std::set<std::pair<int, int>> collisions{};
 	std::set<int> res{};
