@@ -12,7 +12,7 @@ from Cpp.Mstar_cpp import *
 #     graph, v_I, v_W, v_F = setup_benchmark(problem)
 #     problem.add_solution(Mstar(graph, v_I, v_W, v_F).solve()[0])
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 17, "M*", "Cpp edge conflicts", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 4, "M*", "Cpp edge conflicts", True)
 for problem in benchmarker:
     cpp_waypoints = copy(problem.waypoints)
     for i in range(len(cpp_waypoints)):
