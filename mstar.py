@@ -33,7 +33,6 @@ class Mstar:
             end = v_F[i]
             if len(self.v_W[i]) > 0:
                 self.v_W[i].sort(key=lambda x: euclidian_distance(start, x) / euclidian_distance(end, x))
-            print(i, self.v_W[i])
         self.v_F = v_F
         self.configurations = {}
         self.policies = []

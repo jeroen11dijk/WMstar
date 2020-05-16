@@ -172,7 +172,9 @@ public:
 				sort(v_W[i].begin(), v_W[i].end(),
 					[start, end](const Coordinate & a, const Coordinate & b) -> bool
 					{
-						return (euclidian_distance(a, start) / euclidian_distance(a, end)) < (euclidian_distance(b, start) / euclidian_distance(b, end));
+						float a_ratio = float(euclidian_distance(a, start)) / float(euclidian_distance(a, end));
+						float b_ratio = float(euclidian_distance(b, start)) / float(euclidian_distance(b, end));
+						return a_ratio < b_ratio;
 					});
 			}
 		}
