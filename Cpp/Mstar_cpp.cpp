@@ -28,20 +28,31 @@ public:
 	}
 };
 
-set<int> phi(vector<Coordinate> v_k) {
+int euclidian_distance(Coordinate a, Coordinate b) {
+	return abs(a.a - b.a) + abs(a.b - b.b);
+}
+
+set<int> phi(vector<Coordinate> v_l, vector<Coordinate> v_k = vector<Coordinate>{}) {
 	unordered_set<Coordinate, coordinate_hash> seen{};
 	unordered_set<Coordinate, coordinate_hash> collisions{};
 	set<int> res{};
-	for (Coordinate val : v_k) {
-		if (seen.count(val)) {
-			collisions.insert(val);
+	for (int i = 0; i != v_l.size(); i++) {
+		if (seen.count(v_l[i])) {
+			collisions.insert(v_l[i]);
 		}
 		else {
-			seen.insert(val);
+			seen.insert(v_l[i]);
+		}
+		if (count(v_k.begin(), v_k.end(), v_l[i])) {
+			auto it = find(v_k.begin(), v_k.end(), v_l[i]);
+			int v_k_index = distance(v_k.begin(), it);
+			if (v_k[i] == v_l[v_k_index] && i != v_k_index) {
+				res.insert(i);
+			}
 		}
 	}
-	for (int i = 0; i != v_k.size(); i++) {
-		if (collisions.count(v_k[i])) {
+	for (int i = 0; i != v_l.size(); i++) {
+		if (collisions.count(v_l[i])) {
 			res.insert(i);
 		}
 	}
@@ -135,46 +146,59 @@ public:
 	vector<vector<Coordinate>> targets;
 	priority_queue<Queue_entry, vector<Queue_entry>, greater<Queue_entry>> open;
 
-	Mstar_cpp(vector<vector<int>> grid, vector<pair<int, int>> v_I, vector<vector<pair<int, int>>> v_W, vector<pair<int, int>> v_F) {
-		this->n_agents = v_I.size();
-		this->graph = create_graph(grid);
-		for (pair<int, int> start : v_I) {
-			this->v_I.push_back(Coordinate(start.first, start.second));
+	Mstar_cpp(vector<vector<int>> grid, vector<pair<int, int>> v_I_a, vector<vector<pair<int, int>>> v_W_a, vector<pair<int, int>> v_F_a) {
+		n_agents = v_I_a.size();
+		graph = create_graph(grid);
+		for (pair<int, int> start : v_I_a) {
+			v_I.push_back(Coordinate(start.first, start.second));
+		}
+		for (pair<int, int> goal : v_F_a) {
+			v_F.push_back(Coordinate(goal.first, goal.second));
 		}
 		// TODO Sort v_W
-		for (vector<pair<int, int>> waypoints : v_W) {
+		for (vector<pair<int, int>> waypoints : v_W_a) {
 			vector<Coordinate> waypoints_i;
 			for (pair<int, int> waypoint : waypoints) {
 				if (waypoint.first != -1 && waypoint.second != -1) {
 					waypoints_i.push_back(Coordinate(waypoint.first, waypoint.second));
 				}
 			}
-			this->v_W.push_back(waypoints_i);
+			v_W.push_back(waypoints_i);
 		}
-		for (pair<int, int> goal : v_F) {
-			this->v_F.push_back(Coordinate(goal.first, goal.second));
+		for (int i = 0; i != n_agents; i++) {
+			Coordinate start = v_I[i];
+			Coordinate end = v_F[i];
+			if (v_W[i].size() > 1) {
+				sort(v_W[i].begin(), v_W[i].end(),
+					[start, end](const Coordinate & a, const Coordinate & b) -> bool
+					{
+						float a_ratio = float(euclidian_distance(a, start)) / float(euclidian_distance(a, end));
+						float b_ratio = float(euclidian_distance(b, start)) / float(euclidian_distance(b, end));
+						return a_ratio < b_ratio;
+					});
+			}
 		}
-		for (int i = 0; i != this->n_agents; i++) {
+		for (int i = 0; i != n_agents; i++) {
 			vector<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>> policy_i;
 			vector<unordered_map<Coordinate, int, coordinate_hash>> distance_i;
 			vector<Coordinate> targets_i;
-			for (Coordinate const& waypoint : this->v_W[i]) {
-				if (this->graph.count(waypoint)) {
+			for (Coordinate const& waypoint : v_W[i]) {
+				if (graph.count(waypoint)) {
 					pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_map<Coordinate, int, coordinate_hash>> dijkstra = dijkstra_predecessor_and_distance(graph, waypoint);
 					policy_i.push_back(dijkstra.first);
 					distance_i.push_back(dijkstra.second);
 					targets_i.push_back(waypoint);
 				}
 			}
-			pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_map<Coordinate, int, coordinate_hash>> dijkstra = dijkstra_predecessor_and_distance(graph, this->v_F[i]);
+			pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_map<Coordinate, int, coordinate_hash>> dijkstra = dijkstra_predecessor_and_distance(graph, v_F[i]);
 			policy_i.push_back(dijkstra.first);
 			distance_i.push_back(dijkstra.second);
-			targets_i.push_back(this->v_F[i]);
-			this->policies.push_back(policy_i);
-			this->distances.push_back(distance_i);
-			this->targets.push_back(targets_i);
+			targets_i.push_back(v_F[i]);
+			policies.push_back(policy_i);
+			distances.push_back(distance_i);
+			targets.push_back(targets_i);
 		}
-		Config_key v_I_key = Config_key(this->v_I, vector<int>(this->n_agents, 0));
+		Config_key v_I_key = Config_key(v_I, vector<int>(n_agents, 0));
 		configurations[v_I_key] = Config_value();
 		configurations[v_I_key].cost = 0;
 		open.push(Queue_entry(heuristic_configuration(v_I_key), v_I_key));
@@ -215,7 +239,7 @@ public:
 							v_l_target_indices[i]++;
 						}
 					}
-					set<int> v_l_collisions = phi(v_l);
+					set<int> v_l_collisions = phi(v_l, v_k.coordinates);
 					Config_key v_l_key = Config_key(v_l, v_l_target_indices);
 					if (!configurations.count(v_l_key)) {
 						configurations[v_l_key] = Config_value();
@@ -250,13 +274,19 @@ public:
 	}
 
 	void backprop(Config_key v_k, set<int> C_l) {
-		Config_value* v_k_config = &configurations[v_k];
-		if (includes(C_l.begin(), C_l.end(), v_k_config->collisions.begin(), v_k_config->collisions.end())) {
-			v_k_config->collisions.insert(C_l.begin(), C_l.end());
+		bool isSubset = true;
+		for (auto index : C_l) {
+			if (!configurations[v_k].collisions.count(index)) {
+				isSubset = false;
+				break;
+			}
+		}
+		if (!isSubset) {
+			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
-			open.push(Queue_entry(v_k_config->cost + heuristic, v_k));
-			for (Config_key v_m : v_k_config->back_set) {
-				backprop(v_m, v_k_config->collisions);
+			open.push(Queue_entry(configurations[v_k].cost + heuristic, v_k));
+			for (Config_key v_m : configurations[v_k].back_set) {
+				backprop(v_m, configurations[v_k].collisions);
 			}
 		}
 	}
@@ -297,13 +327,13 @@ public:
 
 	int heuristic_configuration(Config_key v_k) {
 		int cost = 0;
-		for (int i = 0; i != this->n_agents; i++) {
+		for (int i = 0; i != n_agents; i++) {
 			int target_index = v_k.targets[i];
-			vector<Coordinate> targets = this->targets[i];
-			cost += this->distances[i][target_index][v_k.coordinates[i]];
+			vector<Coordinate> targets_i = targets[i];
+			cost += distances[i][target_index][v_k.coordinates[i]];
 			target_index++;
-			while (target_index < targets.size()) {
-				cost += this->distances[i][target_index][targets[target_index - 1]];
+			while (target_index < targets_i.size()) {
+				cost += distances[i][target_index][targets_i[target_index - 1]];
 				target_index++;
 			}
 		}

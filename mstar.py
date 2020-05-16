@@ -1,7 +1,7 @@
 import heapq
 import itertools
 from functools import lru_cache
-
+from profilehooks import profile
 import Cpp.Mstar_cpp
 
 from graph import dijkstra_predecessor_and_distance
@@ -138,7 +138,7 @@ class Mstar:
             for v_m, v_m_target_indices in v_k_config.back_set:
                 self.backprop(v_m, v_m_target_indices, v_k_config.collisions)
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=65536)
     def get_edge_weight(self, v_k, v_l, target_indices):
         cost = 0
         for i in range(self.n_agents):
@@ -146,7 +146,7 @@ class Mstar:
                 cost += 1
         return cost
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=65536)
     def heuristic_configuration(self, v_k, target_indices):
         cost = 0
         for i in range(self.n_agents):
@@ -158,27 +158,6 @@ class Mstar:
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
         return cost
-
-
-# Check for collisions
-def phi(v_l, v_k=None):
-    seen = set()
-    double = []
-    res = []
-    for i, val in enumerate(v_l):
-        if val in seen:
-            double.append(val)
-        else:
-            seen.add(val)
-        if v_k is not None:
-            if v_l[i] in v_k:
-                v_k_index = v_k.index(v_l[i])
-                if v_k[i] == v_l[v_k_index] and i != v_k_index:
-                    res.append(i)
-    double = set(double)
-    res.extend([i for i, val in enumerate(v_l) if val in double])
-    return res
-
 
 def euclidian_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
