@@ -1,31 +1,55 @@
 import math
+from copy import copy
 
+from Cpp.Mstar_cpp import *
 from mapfw import MapfwBenchmarker
 
 from mstar import Mstar
 
 
-def main(G, v_I, v_W, v_F, min_cost):
+def python_test(G, v_I, v_W, v_F, min_cost):
     res = Mstar(G, v_I, v_W, v_F).solve()
     if res[1] < min_cost:
         print(res[1])
     assert res[1] < min_cost or math.isclose(res[1], min_cost)
     paths = res[0]
     for i in range(len(v_I)):
-        assert v_I[i] in paths[i][0] or list(v_I[i]) == paths[i][0]
+        assert list(v_I[i]) == paths[i][0]
     for i in range(len(v_W)):
         if len(v_W[i]) > 0:
             for waypoint in v_W[i]:
                 assert list(waypoint) in paths[i]
     for i in range(len(v_F)):
-        assert v_F[i] == paths[i][-1] or list(v_F[i]) == paths[i][-1]
+        assert list(v_F[i]) == paths[i][-1]
+
+
+def cpp_test(G, v_I, v_W, v_F, min_cost):
+    res = Mstar_cpp(G, v_I, v_W, v_F).solve()
+    if res[1] < min_cost:
+        print(res[1])
+    assert res[1] < min_cost or math.isclose(res[1], min_cost)
+    paths = res[0]
+    for i in range(len(v_I)):
+        assert v_I[i] == list(paths[i][0])
+    for i in range(len(v_W)):
+        if len(v_W[i]) > 0:
+            for waypoint in v_W[i]:
+                if waypoint != [-1, -1]:
+                    assert tuple(waypoint) in paths[i]
+    for i in range(len(v_F)):
+        assert v_F[i] == list(paths[i][-1])
 
 
 def benchmark(i, min_cost):
     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", i, "M*", "Test", True)
     for problem in benchmarker:
+        cpp_waypoints = copy(problem.waypoints)
+        for i in range(len(cpp_waypoints)):
+            if len(cpp_waypoints[i]) == 0:
+                cpp_waypoints[i] = [[-1, -1]]
+        cpp_test(problem.grid, problem.starts, cpp_waypoints, problem.goals, min_cost)
         graph, v_I, v_W, v_F = setup_benchmark(problem)
-        main(graph, v_I, v_W, v_F, min_cost)
+        python_test(graph, v_I, v_W, v_F, min_cost)
 
 
 def setup_benchmark(problem):
@@ -105,10 +129,10 @@ class TestBenchmarks:
         benchmark(14, 72)
 
     def test_benchmark_15(self):
-        benchmark(15, 68)
+        benchmark(15, 72)
 
     def test_benchmark_16(self):
-        benchmark(16, 52)
+        benchmark(16, 68)
 
     def test_benchmark_17(self):
         benchmark(17, 49)
