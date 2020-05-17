@@ -1,8 +1,7 @@
 import heapq
 import itertools
-from functools import lru_cache
 
-import Cpp.Mstar_cpp
+from Mstar_cpp import python_phi
 
 from graph import dijkstra_predecessor_and_distance
 
@@ -72,14 +71,14 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in v_k_config.back_ptr])
                 return res, v_k_config.cost
-            if len(Cpp.Mstar_cpp.python_phi(v_k, [(-1, -1)])) == 0:
+            if len(python_phi(v_k, [(-1, -1)])) == 0:
                 for v_l in self.get_limited_neighbours(v_k, target_indices):
                     v_l_target_indices = list(target_indices)
                     for i in range(self.n_agents):
                         if v_l[i] == self.targets[i][v_l_target_indices[i]] and v_l[i] != self.v_F[i]:
                             v_l_target_indices[i] += 1
                     v_l_target_indices = tuple(v_l_target_indices)
-                    v_l_collisions = Cpp.Mstar_cpp.python_phi(v_l, v_k)
+                    v_l_collisions = python_phi(v_l, v_k)
                     if (v_l, v_l_target_indices) not in configurations:
                         configurations[(v_l, v_l_target_indices)] = Config()
                     v_l_config = configurations[(v_l, v_l_target_indices)]
