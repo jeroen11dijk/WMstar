@@ -1,8 +1,10 @@
 from copy import copy
-
+import sys
+from pathlib import Path
 from mapfw import MapfwBenchmarker
 from mstar import Mstar
 from test_benchmarks import setup_benchmark
+sys.path.insert(1, str(Path(__file__).absolute().parent))
 from Cpp.Mstar_cpp import Mstar_cpp
 
 

@@ -1,6 +1,9 @@
 import math
+import sys
 from copy import copy
+from pathlib import Path
 
+sys.path.insert(1, str(Path(__file__).absolute().parent))
 from Cpp.Mstar_cpp import Mstar_cpp
 from mapfw import MapfwBenchmarker
 
