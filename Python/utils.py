@@ -51,6 +51,8 @@ def tsp(start, end, waypoints, distances):
     while len(visited) < n_nodes:
         index = 0
         while graph[current][index][1] in visited:
+            if start == end == graph[current][index][1] and visited.count(start) < 2:
+                break
             index += 1
         next = graph[current][index][1]
         visited.append(next)
