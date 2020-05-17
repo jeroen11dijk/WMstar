@@ -3,7 +3,7 @@ from copy import copy
 from mapfw import MapfwBenchmarker
 from mstar import Mstar
 from test_benchmarks import setup_benchmark
-from Cpp.Mstar_cpp import *
+from Cpp.Mstar_cpp import Mstar_cpp
 
 
 # benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 17, "M*", "Python edge conflicts", True)

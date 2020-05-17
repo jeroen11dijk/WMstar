@@ -1,7 +1,7 @@
 import math
 from copy import copy
 
-from Cpp.Mstar_cpp import *
+from Cpp.Mstar_cpp import Mstar_cpp
 from mapfw import MapfwBenchmarker
 
 from mstar import Mstar
