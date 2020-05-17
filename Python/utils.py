@@ -28,3 +28,31 @@ def dijkstra_predecessor_and_distance(G, source):
             elif vw_dist == seen[neighbour]:
                 pred[neighbour].append(v)
     return pred, dist
+
+
+def tsp(start, end, waypoints, distances):
+    graph = {}
+    graph[start] = [(distances[i][start], waypoints[i]) for i in range(len(waypoints))] + [(distances[-1][start], end),
+                                                                                           (0, (-1, -1))]
+    graph[start].sort()
+    graph[end] = [(distances[i][end], waypoints[i]) for i in range(len(waypoints))] + [(distances[-1][start], start),
+                                                                                       (0, (-1, -1))]
+    graph[end].sort()
+    graph[(-1, -1)] = [(0, start), (0, end)]
+    for index, waypoint in enumerate(waypoints):
+        graph[waypoint] = [(distances[i][waypoint], waypoints[i]) for i in range(len(waypoints))] + [
+            (distances[index][start], start), (distances[-1][waypoint], end)]
+        graph[waypoint].sort()
+    # Greedy
+    n_nodes = len(waypoints) + 3
+    visited = []
+    visited.append(end)
+    current = end
+    while len(visited) < n_nodes:
+        index = 0
+        while graph[current][index][1] in visited:
+            index += 1
+        next = graph[current][index][1]
+        visited.append(next)
+        current = next
+    return visited[3:]
