@@ -1,10 +1,9 @@
 import heapq
 import itertools
 
-from Mstar_cpp import python_phi
+from Cpp.Mstar_cpp import python_phi
 
-from graph import dijkstra_predecessor_and_distance
-
+from Python.utils import dijkstra_predecessor_and_distance, euclidian_distance
 
 class Config:
     def __init__(self):
@@ -155,7 +154,3 @@ class Mstar:
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
         return cost
-
-
-def euclidian_distance(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])

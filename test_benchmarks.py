@@ -1,10 +1,10 @@
 import math
 from copy import copy
 
-from Mstar_cpp import Mstar_cpp
+from Cpp.Mstar_cpp import Mstar_cpp
 from mapfw import MapfwBenchmarker
 
-from mstar import Mstar
+from Python.mstar import Mstar
 
 
 def python_test(G, v_I, v_W, v_F, min_cost):
