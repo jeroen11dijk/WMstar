@@ -1,7 +1,7 @@
 from mapfw import MapfwBenchmarker
 
 from Python.mstar import Mstar
-from test_benchmarks import setup_benchmark
+from Python.test_python_benchmarks import setup_benchmark
 
 benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M*", "Python edge conflicts", True)
 for problem in benchmarker:

@@ -1,7 +1,5 @@
 import math
-from copy import copy
 
-from Cpp.Mstar_cpp import Mstar_cpp
 from mapfw import MapfwBenchmarker
 
 from Python.mstar import Mstar
@@ -23,31 +21,9 @@ def python_test(G, v_I, v_W, v_F, min_cost):
         assert list(v_F[i]) == paths[i][-1]
 
 
-def cpp_test(G, v_I, v_W, v_F, min_cost):
-    res = Mstar_cpp(G, v_I, v_W, v_F).solve()
-    if res[1] < min_cost:
-        print(res[1])
-    assert res[1] < min_cost or math.isclose(res[1], min_cost)
-    paths = res[0]
-    for i in range(len(v_I)):
-        assert v_I[i] == list(paths[i][0])
-    for i in range(len(v_W)):
-        if len(v_W[i]) > 0:
-            for waypoint in v_W[i]:
-                if waypoint != [-1, -1]:
-                    assert tuple(waypoint) in paths[i]
-    for i in range(len(v_F)):
-        assert v_F[i] == list(paths[i][-1])
-
-
-def benchmark(i, min_cost):
+def python_benchmark(i, min_cost):
     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", i, "M*", "Test", True)
     for problem in benchmarker:
-        cpp_waypoints = copy(problem.waypoints)
-        for i in range(len(cpp_waypoints)):
-            if len(cpp_waypoints[i]) == 0:
-                cpp_waypoints[i] = [[-1, -1]]
-        cpp_test(problem.grid, problem.starts, cpp_waypoints, problem.goals, min_cost)
         graph, v_I, v_W, v_F = setup_benchmark(problem)
         python_test(graph, v_I, v_W, v_F, min_cost)
 
@@ -85,57 +61,57 @@ def setup_benchmark(problem):
 
 
 class TestBenchmarks:
-    def test_benchmark_1(self):
-        benchmark(1, 26)
+    def test_python_benchmark_1(self):
+        python_benchmark(1, 26)
 
-    def test_benchmark_2(self):
-        benchmark(2, 46)
+    def test_python_benchmark_2(self):
+        python_benchmark(2, 46)
 
-    def test_benchmark_3(self):
-        benchmark(3, 73)
+    def test_python_benchmark_3(self):
+        python_benchmark(3, 73)
 
-    def test_benchmark_4(self):
-        benchmark(4, 23)
+    def test_python_benchmark_4(self):
+        python_benchmark(4, 23)
 
-    def test_benchmark_5(self):
-        benchmark(5, 116)
+    def test_python_benchmark_5(self):
+        python_benchmark(5, 116)
 
-    def test_benchmark_6(self):
-        benchmark(6, 25)
+    def test_python_benchmark_6(self):
+        python_benchmark(6, 25)
 
-    def test_benchmark_7(self):
-        benchmark(7, 278)
+    def test_python_benchmark_7(self):
+        python_benchmark(7, 278)
 
-    def test_benchmark_8(self):
-        benchmark(8, 1576)
+    def test_python_benchmark_8(self):
+        python_benchmark(8, 1576)
 
-    def test_benchmark_9(self):
-        benchmark(9, 2438)
+    def test_python_benchmark_9(self):
+        python_benchmark(9, 2438)
 
     # TODO cant solve it within a decent time
-    # def test_benchmark_10(self):
+    # def test_python_benchmark_10(self):
     #     benchmark(10, xx)
 
-    def test_benchmark_11(self):
-        benchmark(11, 100)
+    def test_python_benchmark_11(self):
+        python_benchmark(11, 100)
 
-    def test_benchmark_12(self):
-        benchmark(12, 112)
+    def test_python_benchmark_12(self):
+        python_benchmark(12, 112)
 
-    def test_benchmark_13(self):
-        benchmark(13, 47)
+    def test_python_benchmark_13(self):
+        python_benchmark(13, 47)
 
-    def test_benchmark_14(self):
-        benchmark(14, 72)
+    def test_python_benchmark_14(self):
+        python_benchmark(14, 72)
 
-    def test_benchmark_15(self):
-        benchmark(15, 72)
+    def test_python_benchmark_15(self):
+        python_benchmark(15, 72)
 
-    def test_benchmark_16(self):
-        benchmark(16, 68)
+    def test_python_benchmark_16(self):
+        python_benchmark(16, 68)
 
-    def test_benchmark_17(self):
-        benchmark(17, 49)
+    def test_python_benchmark_17(self):
+        python_benchmark(17, 49)
 
-    def test_benchmark_18(self):
-        benchmark(18, 55)
+    def test_python_benchmark_18(self):
+        python_benchmark(18, 55)
