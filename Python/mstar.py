@@ -44,31 +44,30 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in current_config.back_ptr])
                 return res, current_config.cost
-            if len(python_phi(current.coordinates, [(-1, -1)])) == 0:
-                for neighbour_coordinates in self.get_limited_neighbours(current):
-                    neighbour_target_indices = list(current.target_indices)
-                    for i in range(self.n_agents):
-                        if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
-                                neighbour_coordinates[i] != self.v_F[i]:
-                            neighbour_target_indices[i] += 1
-                    neighbour_target_indices = tuple(neighbour_target_indices)
-                    neighbour = Config_key(neighbour_coordinates, neighbour_target_indices)
-                    neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
-                    if neighbour not in configurations:
-                        configurations[neighbour] = Config_value()
-                    neighbour_config = configurations[neighbour]
-                    neighbour_config.collisions.update(neighbour_collisions)
-                    neighbour_config.back_set.add(current)
-                    self.backprop(current, neighbour_config.collisions)
+            for neighbour_coordinates in self.get_limited_neighbours(current):
+                neighbour_target_indices = list(current.target_indices)
+                for i in range(self.n_agents):
+                    if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
+                            neighbour_coordinates[i] != self.v_F[i]:
+                        neighbour_target_indices[i] += 1
+                neighbour_target_indices = tuple(neighbour_target_indices)
+                neighbour = Config_key(neighbour_coordinates, neighbour_target_indices)
+                neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
+                if neighbour not in configurations:
+                    configurations[neighbour] = Config_value()
+                neighbour_config = configurations[neighbour]
+                neighbour_config.collisions.update(neighbour_collisions)
+                neighbour_config.back_set.add(current)
+                self.backprop(current, neighbour_config.collisions)
 
-                    f = self.get_edge_weight(current.coordinates, neighbour)
-                    new_cost_v_l = current_config.cost + f
-                    old_cost_v_l = neighbour_config.cost
-                    if len(neighbour_collisions) == 0 and new_cost_v_l < old_cost_v_l:
-                        neighbour_config.cost = current_config.cost + f
-                        neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
-                        heuristic = self.heuristic_configuration(neighbour)
-                        heapq.heappush(self.open, (neighbour_config.cost + heuristic, neighbour))
+                f = self.get_edge_weight(current.coordinates, neighbour)
+                new_cost_v_l = current_config.cost + f
+                old_cost_v_l = neighbour_config.cost
+                if len(neighbour_collisions) == 0 and new_cost_v_l < old_cost_v_l:
+                    neighbour_config.cost = current_config.cost + f
+                    neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
+                    heuristic = self.heuristic_configuration(neighbour)
+                    heapq.heappush(self.open, (neighbour_config.cost + heuristic, neighbour))
         return "No path exists, or I am an idiot"
 
     def update_policies_distances_targets(self, graph):
