@@ -44,7 +44,8 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in current_config.back_ptr])
                 return res, current_config.cost
-            for neighbour_coordinates in self.get_limited_neighbours(current):
+            neighbours = self.get_limited_neighbours(current)
+            for neighbour_coordinates in neighbours:
                 neighbour_target_indices = list(current.target_indices)
                 for i in range(self.n_agents):
                     if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
@@ -54,8 +55,9 @@ class Mstar:
                 neighbour = Config_key(neighbour_coordinates, neighbour_target_indices)
                 neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
-                    configurations[neighbour] = Config_value()
-                neighbour_config = configurations[neighbour]
+                    neighbour_config = Config_value()
+                else:
+                    neighbour_config = configurations[neighbour]
                 neighbour_config.collisions.update(neighbour_collisions)
                 neighbour_config.back_set.add(current)
                 self.backprop(current, neighbour_config.collisions)
@@ -66,6 +68,7 @@ class Mstar:
                 if len(neighbour_collisions) == 0 and new_cost_v_l < old_cost_v_l:
                     neighbour_config.cost = current_config.cost + f
                     neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
+                    configurations[neighbour] = neighbour_config
                     heuristic = self.heuristic_configuration(neighbour)
                     heapq.heappush(self.open, (neighbour_config.cost + heuristic, neighbour))
         return "No path exists, or I am an idiot"
@@ -117,7 +120,7 @@ class Mstar:
             neighbours.append((options[0][0],))
             return neighbours
         for element in itertools.product(*options):
-            neighbours.append(element)
+                neighbours.append(element)
         return neighbours
 
     def backprop(self, key, collisions):
