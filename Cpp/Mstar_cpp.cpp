@@ -372,9 +372,17 @@ public:
 	}
 };
 
+struct pair_hash
+{
+	size_t operator() (const pair<int, int> &pair) const
+	{
+		return (pair.first * 0x1f1f1f1f) ^ pair.second;
+	}
+};
+
 set<int> python_phi(vector<pair<int, int>> & v_l, vector<pair<int, int>> & v_k) {
-	set<pair<int, int>> seen{};
-	set<pair<int, int>> collisions{};
+	unordered_set<pair<int, int>, pair_hash> seen{};
+	unordered_set<pair<int, int>, pair_hash> collisions{};
 	set<int> res{};
 	for (int i = 0; i != v_l.size(); i++) {
 		if (seen.count(v_l[i])) {

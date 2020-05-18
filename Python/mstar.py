@@ -111,8 +111,6 @@ class Mstar:
                 if len(successors) == 0:
                     options_i.append(coordinates_i)
                 else:
-                    # for successor in successors:
-                    #     options_i.append(successor)
                     options_i.append(successors[0])
             options.append(options_i)
         if len(options) == 1:
