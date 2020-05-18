@@ -4,7 +4,7 @@ import itertools
 from Cpp.Mstar_cpp import python_phi
 
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp
+from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp
 
 
 class Mstar:
@@ -20,6 +20,7 @@ class Mstar:
             start = v_I[i]
             end = v_F[i]
             if len(v_W[i]) > 1:
+                # self.v_W.append(tsp_greedy(start, end, v_W[i], self.distances[i]))
                 self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
             else:
                 self.v_W.append(v_W[i])
@@ -57,7 +58,7 @@ class Mstar:
                         configurations[neighbour] = Config_value()
                     neighbour_config = configurations[neighbour]
                     neighbour_config.collisions.update(neighbour_collisions)
-                    neighbour_config.back_set.append(current)
+                    neighbour_config.back_set.add(current)
                     self.backprop(current, neighbour_config.collisions)
 
                     f = self.get_edge_weight(current.coordinates, neighbour)
@@ -111,8 +112,9 @@ class Mstar:
                 if len(successors) == 0:
                     options_i.append(coordinates_i)
                 else:
-                    for successor in successors:
-                        options_i.append(successor)
+                    # for successor in successors:
+                    #     options_i.append(successor)
+                    options_i.append(successors[0])
             options.append(options_i)
         if len(options) == 1:
             neighbours.append((options[0][0],))
@@ -130,7 +132,7 @@ class Mstar:
             # if not any(v_k in configuration for configuration in open):
             heuristic = self.heuristic_configuration(key)
             heapq.heappush(self.open, (current_config.cost + heuristic, key))
-            for index, previous in enumerate(current_config.back_set):
+            for previous in current_config.back_set:
                 self.backprop(previous, current_config.collisions)
 
     def get_edge_weight(self, prev_coordinates, key):

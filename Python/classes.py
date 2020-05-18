@@ -7,7 +7,7 @@ Config_key = namedtuple('Config_key', 'coordinates target_indices')
 @dataclass
 class Config_value:
     back_ptr: List[any] = field(default_factory=list)
-    back_set: List[any] = field(default_factory=list)
+    back_set: Set[any] = field(default_factory=set)
     collisions: Set[any] = field(default_factory=set)
     cost: int = float('inf')
 
