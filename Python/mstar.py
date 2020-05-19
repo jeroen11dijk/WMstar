@@ -7,24 +7,27 @@ from Python.classes import Config_key, Config_value
 from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp
 
 class Mstar:
-    def __init__(self, graph, v_I, v_W, v_F):
+    def __init__(self, graph, v_I, v_W, v_F, unordered=True, optimal=True):
         self.n_agents = len(v_I)
         self.graph = graph
         self.v_I = v_I
         self.v_W = v_W
         self.v_F = v_F
         self.update_policies_distances_targets(graph)
-        self.v_W = []
-        for i in range(self.n_agents):
-            start = v_I[i]
-            end = v_F[i]
-            if len(v_W[i]) > 1:
-                # self.v_W.append(tsp_greedy(start, end, v_W[i], self.distances[i]))
-                self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
-            else:
-                self.v_W.append(v_W[i])
+        if unordered:
+            self.v_W = []
+            for i in range(self.n_agents):
+                start = v_I[i]
+                end = v_F[i]
+                if len(v_W[i]) > 1:
+                    if optimal:
+                        self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
+                    else:
+                        self.v_W.append(tsp_greedy(start, end, v_W[i], self.distances[i]))
+                else:
+                    self.v_W.append(v_W[i])
+            self.update_policies_distances_targets(graph)
         self.configurations = {}
-        self.update_policies_distances_targets(graph)
         self.open = []
         v_I_key = Config_key(v_I, (0,) * self.n_agents)
         self.configurations[v_I_key] = Config_value()
@@ -36,7 +39,6 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
-            print(current)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
