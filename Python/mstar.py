@@ -29,7 +29,6 @@ class Mstar:
         v_I_key = Config_key(v_I, (0,) * self.n_agents)
         self.configurations[v_I_key] = Config_value()
         self.configurations[v_I_key].cost = 0
-        self.timing = 0
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
     def solve(self):
@@ -37,6 +36,7 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
+            print(current)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
@@ -60,9 +60,7 @@ class Mstar:
                     neighbour_config = configurations[neighbour]
                 neighbour_config.collisions.update(neighbour_collisions)
                 neighbour_config.back_set.add(current)
-                a = time.time()
                 self.backprop(current, neighbour_config.collisions)
-                self.timing += time.time() - a
                 f = self.get_edge_weight(current.coordinates, neighbour)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
