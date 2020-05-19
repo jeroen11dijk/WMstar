@@ -250,35 +250,33 @@ public:
 					return make_pair(res, configurations[v_k].cost);
 				}
 			}
-			if (phi(v_k.coordinates).size() == 0) {
-				for (vector<Coordinate> & v_l : get_limited_neighbours(v_k)) {
-					vector<int> v_l_target_indices = v_k.targets;
-					for (int i = 0; i != n_agents; i++) {
-						if (v_l[i] == targets[i][v_l_target_indices[i]] && v_l[i] != v_F[i]) {
-							v_l_target_indices[i]++;
-						}
+			for (vector<Coordinate> & v_l : get_limited_neighbours(v_k)) {
+				vector<int> v_l_target_indices = v_k.targets;
+				for (int i = 0; i != n_agents; i++) {
+					if (v_l[i] == targets[i][v_l_target_indices[i]] && v_l[i] != v_F[i]) {
+						v_l_target_indices[i]++;
 					}
-					set<int> v_l_collisions = phi(v_l, v_k.coordinates);
-					Config_key v_l_key = Config_key(v_l, v_l_target_indices);
-					if (!configurations.count(v_l_key)) {
-						configurations[v_l_key] = Config_value();
-					}
-					configurations[v_l_key].collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
-					configurations[v_l_key].back_set.push_back(v_k);
-					time.start();
-					backprop(v_k, configurations[v_l_key].collisions);
-					time.stop();
-					backprop_time += time.elapsed();
-					int f = get_edge_weight(v_k, v_l_key);
-					int new_cost_v_l = configurations[v_k].cost + f;
-					int old_cost_v_l = configurations[v_l_key].cost;
-					if (v_l_collisions.size() == 0 && new_cost_v_l < old_cost_v_l) {
-						configurations[v_l_key].cost = new_cost_v_l;
-						configurations[v_l_key].back_ptr = configurations[v_k].back_ptr;
-						configurations[v_l_key].back_ptr.push_back(v_k.coordinates);
-						int heuristic = heuristic_configuration(v_l_key);
-						open.push(Queue_entry(configurations[v_l_key].cost + heuristic, v_l_key));
-					}
+				}
+				set<int> v_l_collisions = phi(v_l, v_k.coordinates);
+				Config_key v_l_key = Config_key(v_l, v_l_target_indices);
+				if (!configurations.count(v_l_key)) {
+					configurations[v_l_key] = Config_value();
+				}
+				configurations[v_l_key].collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
+				configurations[v_l_key].back_set.insert(v_k);
+				time.start();
+				backprop(v_k, configurations[v_l_key].collisions);
+				time.stop();
+				backprop_time += time.elapsed();
+				int f = get_edge_weight(v_k, v_l_key);
+				int new_cost_v_l = configurations[v_k].cost + f;
+				int old_cost_v_l = configurations[v_l_key].cost;
+				if (v_l_collisions.size() == 0 && new_cost_v_l < old_cost_v_l) {
+					configurations[v_l_key].cost = new_cost_v_l;
+					configurations[v_l_key].back_ptr = configurations[v_k].back_ptr;
+					configurations[v_l_key].back_ptr.push_back(v_k.coordinates);
+					int heuristic = heuristic_configuration(v_l_key);
+					open.push(Queue_entry(configurations[v_l_key].cost + heuristic, v_l_key));
 				}
 			}
 		}
@@ -310,7 +308,7 @@ public:
 			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
 			open.push(Queue_entry(configurations[v_k].cost + heuristic, v_k));
-			for (Config_key & v_m : configurations[v_k].back_set) {
+			for (Config_key v_m : configurations[v_k].back_set) {
 				backprop(v_m, configurations[v_k].collisions);
 			}
 		}
@@ -372,9 +370,17 @@ public:
 	}
 };
 
+struct pair_hash
+{
+	size_t operator() (const pair<int, int> &pair) const
+	{
+		return (pair.first * 0x1f1f1f1f) ^ pair.second;
+	}
+};
+
 set<int> python_phi(vector<pair<int, int>> & v_l, vector<pair<int, int>> & v_k) {
-	set<pair<int, int>> seen{};
-	set<pair<int, int>> collisions{};
+	unordered_set<pair<int, int>, pair_hash> seen{};
+	unordered_set<pair<int, int>, pair_hash> collisions{};
 	set<int> res{};
 	for (int i = 0; i != v_l.size(); i++) {
 		if (seen.count(v_l[i])) {

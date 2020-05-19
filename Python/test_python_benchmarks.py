@@ -80,20 +80,21 @@ class TestBenchmarks:
         python_benchmark(6, 25)
 
     def test_python_benchmark_7(self):
-        python_benchmark(7, 278)
+        python_benchmark(7, 204)
 
-    def test_python_benchmark_8(self):
-        python_benchmark(8, 1576)
+    # TODO cant solve it within a decent time aka blame TSP
+    # def test_python_benchmark_8(self):
+    #     python_benchmark(8, 996)
 
     def test_python_benchmark_9(self):
-        python_benchmark(9, 2438)
+        python_benchmark(9, 1744)
 
     # TODO cant solve it within a decent time
     # def test_python_benchmark_10(self):
     #     benchmark(10, xx)
 
     def test_python_benchmark_11(self):
-        python_benchmark(11, 100)
+        python_benchmark(11, 98)
 
     def test_python_benchmark_12(self):
         python_benchmark(12, 112)
@@ -102,10 +103,10 @@ class TestBenchmarks:
         python_benchmark(13, 47)
 
     def test_python_benchmark_14(self):
-        python_benchmark(14, 72)
+        python_benchmark(14, 33)
 
     def test_python_benchmark_15(self):
-        python_benchmark(15, 72)
+        python_benchmark(15, 68)
 
     def test_python_benchmark_16(self):
         python_benchmark(16, 68)
@@ -114,4 +115,13 @@ class TestBenchmarks:
         python_benchmark(17, 49)
 
     def test_python_benchmark_18(self):
-        python_benchmark(18, 55)
+        python_benchmark(18, 50)
+
+    def test_python_benchmark_20(self):
+        python_benchmark(20, 39)
+
+    def test_python_benchmark_22(self):
+        python_benchmark(22, 109)
+
+    def test_python_benchmark_25(self):
+        python_benchmark(25, 115)
