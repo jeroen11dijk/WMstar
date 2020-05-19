@@ -127,10 +127,10 @@ unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> create_graph(vect
 // Credit: https://stackoverflow.com/a/17050528
 vector<vector<Coordinate>> cart_product(const vector<vector<Coordinate>>& v) {
 	vector<vector<Coordinate>> s = { {} };
-	for (const auto& u : v) {
+	for (const auto & u : v) {
 		vector<vector<Coordinate>> r;
-		for (const auto& x : s) {
-			for (const auto y : u) {
+		for (const auto & x : s) {
+			for (const auto & y : u) {
 				r.push_back(x);
 				r.back().push_back(y);
 			}
@@ -154,7 +154,8 @@ public:
 
 	timer time = timer();
 	float get_limited_neighbours_time = 0.0f;
-	float backprop_time = 0.0f;
+	float backprop_time1 = 0.0f;
+	float backprop_time2 = 0.0f;
 	float get_edge_weight_time = 0.0f;
 	float heuristic_configuration_time = 0.0f;
 
@@ -216,8 +217,6 @@ public:
 	}
 
 	pair<vector<vector<pair<int, int>>>, int> solve() {
-		timer solve = timer();
-		solve.start();
 		while (!open.empty()) {
 			Config_key v_k = open.top().config_key;
 			open.pop();
@@ -241,12 +240,11 @@ public:
 						}
 						res.push_back(res_i);
 					}
-					solve.stop();
 					cout << "get limited neighbours took: " << get_limited_neighbours_time << ". Which is hopefully the title of your sextape" << endl;
-					cout << "backprop took: " << backprop_time << ". Which is hopefully the title of your sextape" << endl;
+					cout << "backprop1 took: " << backprop_time1 << ". Which is hopefully the title of your sextape and was called: " << endl;
+					cout << "backprop1 took: " << backprop_time2 << ". Which is hopefully the title of your sextape and was called: " << endl;
 					cout << "get_edge_weight took: " << get_edge_weight_time << ". Which is hopefully the title of your sextape" << endl;
 					cout << "heuristic_configuration took: " << heuristic_configuration_time << ". Which is hopefully the title of your sextape" << endl;
-					cout << "solve took: " << solve.elapsed() << ". Which is hopefully the title of your sextape" << endl;
 					return make_pair(res, configurations[v_k].cost);
 				}
 			}
@@ -264,10 +262,7 @@ public:
 				}
 				configurations[v_l_key].collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
 				configurations[v_l_key].back_set.insert(v_k);
-				time.start();
 				backprop(v_k, configurations[v_l_key].collisions);
-				time.stop();
-				backprop_time += time.elapsed();
 				int f = get_edge_weight(v_k, v_l_key);
 				int new_cost_v_l = configurations[v_k].cost + f;
 				int old_cost_v_l = configurations[v_l_key].cost;
@@ -297,13 +292,20 @@ public:
 	}
 
 	void backprop(Config_key & v_k, set<int> & C_l) {
+		time.start();
+		//set<int> diff = set<int>{};
+		//set_difference(C_l.begin(), C_l.end(), configurations[v_k].collisions.begin(), configurations[v_k].collisions.end(), inserter(diff, diff.end()));
+		//bool isSubset = diff.size() == 0;
 		bool isSubset = true;
-		for (auto & index : C_l) {
-			if (!configurations[v_k].collisions.count(index)) {
-				isSubset = false;
-				break;
-			}
-		}
+        for (auto & index : C_l) {
+            if (!configurations[v_k].collisions.count(index)) {
+                isSubset = false;
+                break;
+            }
+        }
+		time.stop();
+		backprop_time1 += time.elapsed();
+		time.start();
 		if (!isSubset) {
 			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
@@ -312,6 +314,8 @@ public:
 				backprop(v_m, configurations[v_k].collisions);
 			}
 		}
+		time.stop();
+		backprop_time2 += time.elapsed();
 	}
 
 	vector<vector<Coordinate>> get_limited_neighbours(Config_key & v_k) {
@@ -323,8 +327,17 @@ public:
 			if (configurations[v_k].collisions.count(i)) {
 				// Add all the neighbours
 				options_i.push_back(source);
-				for (auto & nbr : graph[source]) {
-					options_i.push_back(nbr);
+				int target_index = v_k.targets[i];
+				vector<Coordinate> successors = policies[i][target_index][source];
+				if (successors.size() > 1) {
+					for (auto & successor : successors) {
+						options_i.push_back(successor);
+					}
+				}
+				else {
+					for (auto & nbr : graph[source]) {
+						options_i.push_back(nbr);
+					}
 				}
 			}
 			else {
@@ -334,9 +347,7 @@ public:
 					options_i.push_back(source);
 				}
 				else {
-					for (auto & successor : successors) {
-						options_i.push_back(successor);
-					}
+					options_i.push_back(successors[0]);
 				}
 			}
 			options.push_back(options_i);
