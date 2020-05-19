@@ -116,3 +116,12 @@ class TestBenchmarks:
 
     def test_python_benchmark_18(self):
         python_benchmark(18, 50)
+
+    def test_python_benchmark_20(self):
+        python_benchmark(20, 39)
+
+    def test_python_benchmark_22(self):
+        python_benchmark(22, 109)
+
+    def test_python_benchmark_25(self):
+        python_benchmark(25, 115)

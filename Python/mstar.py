@@ -1,11 +1,10 @@
 import heapq
 import itertools
-
+import time
 from Cpp.Mstar_cpp import python_phi
 
 from Python.classes import Config_key, Config_value
 from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp
-
 
 class Mstar:
     def __init__(self, graph, v_I, v_W, v_F):
@@ -30,6 +29,7 @@ class Mstar:
         v_I_key = Config_key(v_I, (0,) * self.n_agents)
         self.configurations[v_I_key] = Config_value()
         self.configurations[v_I_key].cost = 0
+        self.timing = 0
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
     def solve(self):
@@ -60,8 +60,9 @@ class Mstar:
                     neighbour_config = configurations[neighbour]
                 neighbour_config.collisions.update(neighbour_collisions)
                 neighbour_config.back_set.add(current)
+                a = time.time()
                 self.backprop(current, neighbour_config.collisions)
-
+                self.timing += time.time() - a
                 f = self.get_edge_weight(current.coordinates, neighbour)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
@@ -104,9 +105,16 @@ class Mstar:
             options_i = []
             if i in configurations[key].collisions:
                 # ADD all the neighbours
+                target_index = key.target_indices[i]
+                policy = self.policies[i][target_index]
+                successors = policy[key.coordinates[i]]
                 options_i.append(coordinates_i)
-                for nbr in self.graph[coordinates_i]:
-                    options_i.append(nbr)
+                if len(successors) > 1:
+                    for successor in successors:
+                        options_i.append(successor)
+                else:
+                    for nbr in self.graph[coordinates_i]:
+                        options_i.append(nbr)
             else:
                 target_index = key.target_indices[i]
                 policy = self.policies[i][target_index]
