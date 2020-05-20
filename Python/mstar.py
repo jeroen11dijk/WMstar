@@ -4,7 +4,8 @@ import time
 from Cpp.Mstar_cpp import python_phi
 
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp
+from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp, tsp_dynamic
+
 
 class Mstar:
     def __init__(self, graph, v_I, v_W, v_F, unordered=True, optimal=True):
@@ -21,7 +22,8 @@ class Mstar:
                 end = v_F[i]
                 if len(v_W[i]) > 1:
                     if optimal:
-                        self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
+                        # self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
+                        self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
                     else:
                         self.v_W.append(tsp_greedy(start, end, v_W[i], self.distances[i]))
                 else:
@@ -33,6 +35,7 @@ class Mstar:
         self.configurations[v_I_key] = Config_value()
         self.configurations[v_I_key].cost = 0
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
+        self.callCount = 0
 
     def solve(self):
         configurations = self.configurations
@@ -133,6 +136,7 @@ class Mstar:
 
     def backprop(self, key, collisions):
         current_config = self.configurations[key]
+        self.callCount += 1
         if not collisions.issubset(current_config.collisions):
             current_config.collisions.update(collisions)
             # Technically we should check whether its not already in open

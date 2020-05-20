@@ -82,9 +82,8 @@ class TestBenchmarks:
     def test_python_benchmark_7(self):
         python_benchmark(7, 204)
 
-    # TODO cant solve it within a decent time aka blame TSP
-    # def test_python_benchmark_8(self):
-    #     python_benchmark(8, 996)
+    def test_python_benchmark_8(self):
+        python_benchmark(8, 821)
 
     def test_python_benchmark_9(self):
         python_benchmark(9, 1744)
@@ -124,4 +123,4 @@ class TestBenchmarks:
         python_benchmark(22, 109)
 
     def test_python_benchmark_25(self):
-        python_benchmark(25, 115)
+        python_benchmark(25, 116)

@@ -3,7 +3,7 @@ from copy import copy
 from Mstar_cpp import Mstar_cpp
 from mapfw import MapfwBenchmarker
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 12, "M*", "Cpp edge conflicts", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 12, "M*", "Cpp limited neighbours", True)
 for problem in benchmarker:
     cpp_waypoints = copy(problem.waypoints)
     for i in range(len(cpp_waypoints)):

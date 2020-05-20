@@ -29,11 +29,26 @@ public:
 	}
 };
 
+bool isSubset(set<int> & a, set<int> & b) {
+	if (a.size() > b.size()) {
+		return false;
+	}
+	if (a.size() == 0) {
+		return true;
+	}
+	for (auto & index : a) {
+		if (!b.count(index)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 int euclidian_distance(Coordinate a, Coordinate b) {
 	return abs(a.a - b.a) + abs(a.b - b.b);
 }
 
-set<int> phi(vector<Coordinate> v_l, vector<Coordinate> & v_k = vector<Coordinate>{}) {
+set<int> phi(vector<Coordinate> & v_l, vector<Coordinate> & v_k = vector<Coordinate>{}) {
 	unordered_set<Coordinate, coordinate_hash> seen{};
 	unordered_set<Coordinate, coordinate_hash> collisions{};
 	set<int> res{};
@@ -153,11 +168,8 @@ public:
 	priority_queue<Queue_entry, vector<Queue_entry>, greater<Queue_entry>> open;
 
 	timer time = timer();
-	float get_limited_neighbours_time = 0.0f;
 	float backprop_time1 = 0.0f;
 	float backprop_time2 = 0.0f;
-	float get_edge_weight_time = 0.0f;
-	float heuristic_configuration_time = 0.0f;
 
 	Mstar_cpp(vector<vector<int>> & grid, vector<pair<int, int>> & v_I_a, vector<vector<pair<int, int>>> & v_W_a, vector<pair<int, int>> & v_F_a) {
 		n_agents = v_I_a.size();
@@ -240,11 +252,8 @@ public:
 						}
 						res.push_back(res_i);
 					}
-					cout << "get limited neighbours took: " << get_limited_neighbours_time << ". Which is hopefully the title of your sextape" << endl;
 					cout << "backprop1 took: " << backprop_time1 << ". Which is hopefully the title of your sextape and was called: " << endl;
 					cout << "backprop1 took: " << backprop_time2 << ". Which is hopefully the title of your sextape and was called: " << endl;
-					cout << "get_edge_weight took: " << get_edge_weight_time << ". Which is hopefully the title of your sextape" << endl;
-					cout << "heuristic_configuration took: " << heuristic_configuration_time << ". Which is hopefully the title of your sextape" << endl;
 					return make_pair(res, configurations[v_k].cost);
 				}
 			}
@@ -279,34 +288,22 @@ public:
 	}
 
 	int get_edge_weight(Config_key & v_k, Config_key & v_l) {
-		time.start();
 		int cost = 0;
 		for (int i = 0; i != n_agents; i++) {
 			if (!(v_k.coordinates[i] == v_l.coordinates[i] && v_k.coordinates[i] == v_F[i] && v_l.targets[i] == targets[i].size() - 1)) {
 				cost++;
 			}
 		}
-		time.stop();
-		get_edge_weight_time += time.elapsed();
 		return cost;
 	}
 
 	void backprop(Config_key & v_k, set<int> & C_l) {
 		time.start();
-		//set<int> diff = set<int>{};
-		//set_difference(C_l.begin(), C_l.end(), configurations[v_k].collisions.begin(), configurations[v_k].collisions.end(), inserter(diff, diff.end()));
-		//bool isSubset = diff.size() == 0;
-		bool isSubset = true;
-        for (auto & index : C_l) {
-            if (!configurations[v_k].collisions.count(index)) {
-                isSubset = false;
-                break;
-            }
-        }
+		bool subset = isSubset(C_l, configurations[v_k].collisions);
 		time.stop();
 		backprop_time1 += time.elapsed();
 		time.start();
-		if (!isSubset) {
+		if (!subset) {
 			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
 			open.push(Queue_entry(configurations[v_k].cost + heuristic, v_k));
@@ -319,7 +316,6 @@ public:
 	}
 
 	vector<vector<Coordinate>> get_limited_neighbours(Config_key & v_k) {
-		time.start();
 		vector<vector<Coordinate>> options;
 		for (int i = 0; i != n_agents; i++) {
 			Coordinate source = v_k.coordinates[i];
@@ -358,12 +354,9 @@ public:
 		else {
 			return cart_product(options);
 		}
-		time.stop();
-		get_limited_neighbours_time += time.elapsed();
 	}
 
 	int heuristic_configuration(Config_key & v_k) {
-		time.start();
 		int cost = 0;
 		for (int i = 0; i != n_agents; i++) {
 			int target_index = v_k.targets[i];
@@ -375,8 +368,6 @@ public:
 				target_index++;
 			}
 		}
-		time.stop();
-		heuristic_configuration_time += time.elapsed();
 		return cost;
 	}
 };
