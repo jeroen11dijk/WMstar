@@ -56,8 +56,7 @@ class Mstar:
                     if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
                             neighbour_coordinates[i] != self.v_F[i]:
                         neighbour_target_indices[i] += 1
-                neighbour_target_indices = tuple(neighbour_target_indices)
-                neighbour = Config_key(neighbour_coordinates, neighbour_target_indices)
+                neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
                 neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
                     neighbour_config = Config_value()

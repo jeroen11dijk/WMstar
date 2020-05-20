@@ -29,7 +29,7 @@ public:
 	}
 };
 
-bool isSubset(set<int> & a, set<int> & b) {
+bool isSubset(unordered_set<int> & a, unordered_set<int> & b) {
 	if (a.size() > b.size()) {
 		return false;
 	}
@@ -231,8 +231,8 @@ public:
 	pair<vector<vector<pair<int, int>>>, int> solve() {
 		while (!open.empty()) {
 			Config_key v_k = open.top().config_key;
+			Config_value v_k_config = configurations[v_k];
 			open.pop();
-			// TODO check for waypoints
 			if (v_k.coordinates == v_F) {
 				bool visited_waypoints = true;
 				for (int i = 0; i != n_agents; i++) {
@@ -242,19 +242,19 @@ public:
 					}
 				}
 				if (visited_waypoints) {
-					configurations[v_k].back_ptr.push_back(v_F);
+					v_k_config.back_ptr.push_back(v_F);
 					vector<vector<pair<int, int>>> res;
 					for (int i = 0; i != n_agents; i++) {
 						bool visited_waypoints = true;
 						vector<pair<int, int>> res_i;
-						for (auto & config : configurations[v_k].back_ptr) {
+						for (auto & config : v_k_config.back_ptr) {
 							res_i.push_back(make_pair(config[i].a, config[i].b));
 						}
 						res.push_back(res_i);
 					}
 					cout << "backprop1 took: " << backprop_time1 << ". Which is hopefully the title of your sextape and was called: " << endl;
-					cout << "backprop1 took: " << backprop_time2 << ". Which is hopefully the title of your sextape and was called: " << endl;
-					return make_pair(res, configurations[v_k].cost);
+					cout << "backprop2 took: " << backprop_time2 << ". Which is hopefully the title of your sextape and was called: " << endl;
+					return make_pair(res, v_k_config.cost);
 				}
 			}
 			for (vector<Coordinate> & v_l : get_limited_neighbours(v_k)) {
@@ -266,21 +266,26 @@ public:
 				}
 				set<int> v_l_collisions = phi(v_l, v_k.coordinates);
 				Config_key v_l_key = Config_key(v_l, v_l_target_indices);
+				Config_value v_l_config;
 				if (!configurations.count(v_l_key)) {
-					configurations[v_l_key] = Config_value();
+					v_l_config = Config_value();
 				}
-				configurations[v_l_key].collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
-				configurations[v_l_key].back_set.insert(v_k);
-				backprop(v_k, configurations[v_l_key].collisions);
+				else {
+					v_l_config = configurations[v_l_key];
+				}
+				v_l_config.collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
+				v_l_config.back_set.insert(v_k);
+				backprop(v_k, v_l_config.collisions);
 				int f = get_edge_weight(v_k, v_l_key);
-				int new_cost_v_l = configurations[v_k].cost + f;
-				int old_cost_v_l = configurations[v_l_key].cost;
+				int new_cost_v_l = v_k_config.cost + f;
+				int old_cost_v_l = v_l_config.cost;
 				if (v_l_collisions.size() == 0 && new_cost_v_l < old_cost_v_l) {
-					configurations[v_l_key].cost = new_cost_v_l;
-					configurations[v_l_key].back_ptr = configurations[v_k].back_ptr;
-					configurations[v_l_key].back_ptr.push_back(v_k.coordinates);
+					v_l_config.cost = new_cost_v_l;
+					v_l_config.back_ptr = v_k_config.back_ptr;
+					v_l_config.back_ptr.push_back(v_k.coordinates);
+					configurations[v_l_key] = v_l_config;
 					int heuristic = heuristic_configuration(v_l_key);
-					open.push(Queue_entry(configurations[v_l_key].cost + heuristic, v_l_key));
+					open.push(Queue_entry(v_l_config.cost + heuristic, v_l_key));
 				}
 			}
 		}
@@ -297,18 +302,19 @@ public:
 		return cost;
 	}
 
-	void backprop(Config_key & v_k, set<int> & C_l) {
+	void backprop(Config_key & v_k, unordered_set<int> & C_l) {
 		time.start();
-		bool subset = isSubset(C_l, configurations[v_k].collisions);
+		Config_value & current_config = configurations[v_k];
+		bool subset = isSubset(C_l, current_config.collisions);
 		time.stop();
 		backprop_time1 += time.elapsed();
 		time.start();
 		if (!subset) {
-			configurations[v_k].collisions.insert(C_l.begin(), C_l.end());
+			current_config.collisions.insert(C_l.begin(), C_l.end());
 			int heuristic = heuristic_configuration(v_k);
-			open.push(Queue_entry(configurations[v_k].cost + heuristic, v_k));
-			for (Config_key v_m : configurations[v_k].back_set) {
-				backprop(v_m, configurations[v_k].collisions);
+			open.push(Queue_entry(current_config.cost + heuristic, v_k));
+			for (Config_key v_m : current_config.back_set) {
+				backprop(v_m, current_config.collisions);
 			}
 		}
 		time.stop();
