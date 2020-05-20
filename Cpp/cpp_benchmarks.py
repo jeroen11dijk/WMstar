@@ -86,4 +86,13 @@ class TestBenchmarks:
         cpp_benchmark(17, 49)
 
     def test_cpp_benchmark_18(self):
-        cpp_benchmark(18, 55)
+        cpp_benchmark(18, 52)
+
+    def test_cpp_benchmark_20(self):
+        cpp_benchmark(20, 39)
+
+    def test_cpp_benchmark_22(self):
+        cpp_benchmark(22, 129)
+
+    def test_cpp_benchmark_25(self):
+        cpp_benchmark(25, 171)

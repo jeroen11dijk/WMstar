@@ -62,32 +62,6 @@ def tsp_greedy(start, end, waypoints, distances):
     return visited[3:]
 
 
-def tsp(start, end, waypoints, distances):
-    graph = {}
-    graph[start] = {waypoints[i]: distances[i][start] for i in range(len(waypoints))}
-    graph[end] = {waypoints[i]: distances[i][end] for i in range(len(waypoints))}
-    for index, waypoint in enumerate(waypoints):
-        graph[waypoint] = {waypoints[i]: distances[i][waypoint] for i in range(len(waypoints))}
-        graph[waypoint][start] = distances[index][start]
-        graph[waypoint][end] = distances[-1][waypoint]
-    # Optimal
-    best_path = None
-    best_cost = float('inf')
-    for path in itertools.permutations(waypoints):
-        path = list(path)
-        path.insert(0, start)
-        path.append(end)
-        path_cost = 0
-        for i in range(len(path) - 1):
-            current = path[i]
-            next = path[i + 1]
-            path_cost += graph[current][next]
-        if path_cost < best_cost:
-            best_path = path
-            best_cost = path_cost
-    return best_path[1:-1]
-
-
 def tsp_dynamic(start, end, waypoints, distances):
     matrix = []
     nodes = [start, (-1, -1), end] + waypoints

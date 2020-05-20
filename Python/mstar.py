@@ -4,7 +4,7 @@ import time
 from Cpp.Mstar_cpp import python_phi
 
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp, tsp_dynamic
+from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dynamic
 
 
 class Mstar:
@@ -35,7 +35,6 @@ class Mstar:
         self.configurations[v_I_key] = Config_value()
         self.configurations[v_I_key].cost = 0
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
-        self.callCount = 0
 
     def solve(self):
         configurations = self.configurations
@@ -135,7 +134,6 @@ class Mstar:
 
     def backprop(self, key, collisions):
         current_config = self.configurations[key]
-        self.callCount += 1
         if not collisions.issubset(current_config.collisions):
             current_config.collisions.update(collisions)
             # Technically we should check whether its not already in open
