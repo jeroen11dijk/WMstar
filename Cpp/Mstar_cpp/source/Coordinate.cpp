@@ -1,4 +1,4 @@
-#include "Coordinate.h"
+#include "../inc/Coordinate.h"
 
 std::ostream &operator<<(std::ostream &os, const Coordinate &coordinate) {
     return os << "(" << coordinate.a << ", " << coordinate.b << ")";

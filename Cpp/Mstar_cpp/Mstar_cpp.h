@@ -10,11 +10,11 @@
 #include <unordered_set>
 #include <set>
 
-#include "classes/Config_key.h"
-#include "classes/Config_value.h"
-#include "classes/Coordinate.h"
-#include "classes/Timer.h"
-#include "classes/Queue_entry.h"
+#include "inc/Config_key.h"
+#include "inc/Config_value.h"
+#include "inc/Coordinate.h"
+#include "inc/Timer.h"
+#include "inc/Queue_entry.h"
 
 class Mstar_cpp {
 public:
@@ -26,7 +26,7 @@ public:
 	std::vector<std::vector<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash>>> policies;
 	std::vector<std::vector<std::unordered_map<Coordinate, int, coordinate_hash>>> distances;
 	std::vector<std::vector<Coordinate>> targets;
-	std::priority_queue<Queue_entry, std::vector<Queue_entry>, std::greater<Queue_entry>> open;
+	std::priority_queue<Queue_entry, std::vector<Queue_entry>, std::greater<>> open;
 
 	timer time = timer();
 	float backprop_time1 = 0.0f;

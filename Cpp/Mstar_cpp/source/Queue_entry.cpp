@@ -1,4 +1,4 @@
-#include "Queue_entry.h"
+#include "../inc/Queue_entry.h"
 
 std::ostream &operator<<(std::ostream &os, const Queue_entry &queue_entry) {
     return os << "[Cost: " << queue_entry.cost << ". And config_key: " << queue_entry.config_key << "]";
