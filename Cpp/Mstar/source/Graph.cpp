@@ -1,4 +1,5 @@
 #include <queue>
+#include <algorithm>
 #include "../inc/Graph.h"
 
 bool CompareTuple::operator()(std::tuple<int, int, Coordinate> &t1, std::tuple<int, int, Coordinate> &t2) {
@@ -72,4 +73,51 @@ dijkstra_predecessor_and_distance(std::unordered_map<Coordinate, std::vector<Coo
         }
     }
     return make_pair(pred, distances);
+}
+
+bool sort_pair(const std::pair<int, Coordinate> & a, std::pair<int, Coordinate> & b) {
+    return a.first < b.first;
+}
+
+std::vector<Coordinate> tsp_greedy(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
+                                   std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances) {
+    std::unordered_map<Coordinate, std::vector<std::pair<int, Coordinate>>, coordinate_hash> graph;
+    std::vector<Coordinate> nodes;
+    nodes.emplace_back(start);
+    nodes.emplace_back(end);
+    nodes.insert(nodes.end(), waypoints.begin(), waypoints.end());
+    for (int i = 0; i != nodes.size(); i++) {
+        Coordinate current = nodes[i];
+        graph[current] = {};
+        if (current == start || current == end) {
+            graph[current].emplace_back(std::make_pair(0, Coordinate(-1, -1)));
+        }
+        for (Coordinate other : nodes) {
+            graph[current].emplace_back(std::make_pair(distances[i][other], other));
+        }
+        graph[current].emplace_back(std::make_pair(distances[i][start], start));
+        graph[current].emplace_back(std::make_pair(distances[-1][current], end));
+        std::sort(graph[current].begin(), graph[current].end(), sort_pair);
+    }
+    int n_nodes = nodes.size() + 1;
+    std::vector<Coordinate> visited = {end};
+    Coordinate current = end;
+    while (visited.size() < n_nodes) {
+        int index = 0;
+        while (std::count(visited.begin(), visited.end(), graph[current][index].second)) {
+            if (start == end && start == graph[current][index].second &&
+                std::count(visited.begin(), visited.end(), start) < 2) {
+                break;
+            }
+            index++;
+        }
+        Coordinate next = graph[current][index].second;
+        visited.emplace_back(next);
+        current = next;
+    }
+    std::cout << "Path" << std::endl;
+    for (auto loc : visited) {
+        std::cout << loc << std::endl;
+    }
+    return visited;
 }

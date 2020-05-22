@@ -29,6 +29,7 @@ class Mstar:
                 else:
                     self.v_W.append(v_W[i])
             self.update_policies_distances_targets(graph)
+        print(self.v_W)
         self.configurations = {}
         self.open = []
         v_I_key = Config_key(v_I, (0,) * self.n_agents)

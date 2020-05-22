@@ -17,4 +17,7 @@ std::pair<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_has
 dijkstra_predecessor_and_distance(std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash> &graph,
                                   Coordinate source);
 
+std::vector<Coordinate> tsp_greedy(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
+                                   std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances);
+
 #endif //MSTAR_CPP_GRAPH_H

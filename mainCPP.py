@@ -1,9 +1,9 @@
 from copy import copy
 
-from Mstar_pybind import Mstar
+from Cpp.Mstar_pybind import Mstar
 from mapfw import MapfwBenchmarker, get_all_benchmarks
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M*", "Cpp optimized but bad heuristic", True)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 14, "M*", "Cpp optimized but bad heuristic", True)
 for problem in benchmarker:
     cpp_waypoints = copy(problem.waypoints)
     for i in range(len(cpp_waypoints)):

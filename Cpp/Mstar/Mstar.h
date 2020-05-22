@@ -29,10 +29,14 @@ public:
 	std::priority_queue<Queue_entry, std::vector<Queue_entry>, std::greater<>> open;
 
 	timer time = timer();
-	float backprop_time1 = 0.0f;
-	float backprop_time2 = 0.0f;
+	float get_edge_weight_time = 0.0f;
+    float backprop_time = 0.0f;
+    float get_limited_neighbours_time = 0.0f;
+    float heuristic_configuration_time = 0.0f;
+    float phi_time = 0.0f;
 
 	Mstar(std::vector<std::vector<int>> & grid, std::vector<std::pair<int, int>> & v_I_a, std::vector<std::vector<std::pair<int, int>>> & v_W_a, std::vector<std::pair<int, int>> & v_F_a);
+    void update_policies_distances_targets();
 	std::pair<std::vector<std::vector<std::pair<int, int>>>, int> solve();
 	int get_edge_weight(Config_key & v_k, Config_key & v_l);
 	void backprop(Config_key & v_k, std::unordered_set<int> & C_l);

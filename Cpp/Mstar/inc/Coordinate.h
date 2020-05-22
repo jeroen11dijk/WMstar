@@ -5,12 +5,13 @@
 
 class Coordinate {
 public:
+
     int a;
     int b;
 
     Coordinate() {};
 
-    Coordinate(int &a, int &b) : a(a), b(b) {};
+    Coordinate(const int &a, const int &b) : a(a), b(b) {};
 
     friend std::ostream &operator<<(std::ostream &os, const Coordinate &coordinate);
 

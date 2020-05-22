@@ -23,6 +23,7 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
         }
         v_W.push_back(waypoints_i);
     }
+    update_policies_distances_targets();
     for (int i = 0; i != n_agents; i++) {
         Coordinate start = v_I[i];
         Coordinate end = v_F[i];
@@ -33,8 +34,20 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
                      float b_ratio = float(euclidian_distance(b, start)) / float(euclidian_distance(b, end));
                      return a_ratio < b_ratio;
                  });
+            std::vector<Coordinate> temp = tsp_greedy(start, end, v_W[i], distances[i]);
         }
     }
+    update_policies_distances_targets();
+    Config_key v_I_key = Config_key(v_I, std::vector<int>(n_agents, 0));
+    configurations[v_I_key] = Config_value();
+    configurations[v_I_key].cost = 0;
+    open.push(Queue_entry(heuristic_configuration(v_I_key), v_I_key));
+}
+
+void Mstar::update_policies_distances_targets() {
+    policies = {};
+    distances = {};
+    targets = {};
     for (int i = 0; i != n_agents; i++) {
         std::vector<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash>> policy_i;
         std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> distance_i;
@@ -57,16 +70,11 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
         distances.push_back(distance_i);
         targets.push_back(targets_i);
     }
-    Config_key v_I_key = Config_key(v_I, std::vector<int>(n_agents, 0));
-    configurations[v_I_key] = Config_value();
-    configurations[v_I_key].cost = 0;
-    open.push(Queue_entry(heuristic_configuration(v_I_key), v_I_key));
 }
 
 std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
-        std::cout << v_k << std::endl;
         Config_value v_k_config = configurations[v_k];
         open.pop();
         if (v_k.coordinates == v_F) {
@@ -87,8 +95,11 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
                     }
                     res.push_back(res_i);
                 }
-                std::cout << "backprop1 took: " << backprop_time1 << std::endl;
-                std::cout << "backprop2 took: " << backprop_time2 << std::endl;
+                std::cout << "Get edge weight took " << get_edge_weight_time << std::endl;
+                std::cout << "Backrpop took " << backprop_time << std::endl;
+                std::cout << "Get limited neighbours took " << get_limited_neighbours_time << std::endl;
+                std::cout << "Heuristic configuration took " << heuristic_configuration_time << std::endl;
+                std::cout << "Phi took " << phi_time << std::endl;
                 return make_pair(res, v_k_config.cost);
             }
         }
@@ -99,7 +110,10 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
                     v_l_target_indices[i]++;
                 }
             }
+            time.start();
             std::set<int> v_l_collisions = phi(v_l, v_k.coordinates);
+            time.stop();
+            phi_time += time.elapsed();
             Config_key v_l_key = Config_key(v_l, v_l_target_indices);
             Config_value v_l_config;
             if (!configurations.count(v_l_key)) {
@@ -109,8 +123,14 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
             }
             v_l_config.collisions.insert(v_l_collisions.begin(), v_l_collisions.end());
             v_l_config.back_set.insert(v_k);
+            time.start();
             backprop(v_k, v_l_config.collisions);
+            time.stop();
+            backprop_time += float(time.elapsed());
+            time.start();
             int f = get_edge_weight(v_k, v_l_key);
+            time.stop();
+            get_edge_weight_time += float(time.elapsed());
             int new_cost_v_l = v_k_config.cost + f;
             int old_cost_v_l = v_l_config.cost;
             if (v_l_collisions.empty() && new_cost_v_l < old_cost_v_l) {
@@ -138,12 +158,8 @@ int Mstar::get_edge_weight(Config_key &v_k, Config_key &v_l) {
 }
 
 void Mstar::backprop(Config_key &v_k, std::unordered_set<int> &C_l) {
-    time.start();
     Config_value &current_config = configurations[v_k];
     bool subset = isSubset(C_l, current_config.collisions);
-    time.stop();
-    backprop_time1 += float(time.elapsed());
-    time.start();
     if (!subset) {
         current_config.collisions.insert(C_l.begin(), C_l.end());
         int heuristic = heuristic_configuration(v_k);
@@ -153,11 +169,10 @@ void Mstar::backprop(Config_key &v_k, std::unordered_set<int> &C_l) {
             backprop(v_m, current_config.collisions);
         }
     }
-    time.stop();
-    backprop_time2 += float(time.elapsed());
 }
 
 std::vector<std::vector<Coordinate>> Mstar::get_limited_neighbours(Config_key &v_k) {
+    time.start();
     std::vector<std::vector<Coordinate>> options;
     for (int i = 0; i != n_agents; i++) {
         Coordinate source = v_k.coordinates[i];
@@ -187,14 +202,19 @@ std::vector<std::vector<Coordinate>> Mstar::get_limited_neighbours(Config_key &v
         }
         options.push_back(options_i);
     }
+    std::vector<std::vector<Coordinate>> res;
     if (options.size() == 1) {
-        return options;
+        res = options;
     } else {
-        return cart_product(options);
+        res = cart_product(options);
     }
+    time.stop();
+    get_limited_neighbours_time += time.elapsed();
+    return res;
 }
 
 int Mstar::heuristic_configuration(Config_key &v_k) {
+    time.start();
     int cost = 0;
     for (int i = 0; i != n_agents; i++) {
         int target_index = v_k.targets[i];
@@ -206,5 +226,7 @@ int Mstar::heuristic_configuration(Config_key &v_k) {
             target_index++;
         }
     }
+    time.stop();
+    heuristic_configuration_time += time.elapsed();
     return cost;
 }
