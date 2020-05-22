@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MSTAR_CPP_QUEUE_ENTRY_H
+#define MSTAR_CPP_QUEUE_ENTRY_H
 
 #include <iostream>
 #include "Config_key.h"
@@ -19,3 +20,5 @@ public:
 
     friend bool operator==(const Queue_entry &q1, const Queue_entry &q2);
 };
+
+#endif //MSTAR_CPP_QUEUE_ENTRY_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MSTAR_CPP_TIMER_H
+#define MSTAR_CPP_TIMER_H
 
 #include <chrono>
 
@@ -18,3 +19,5 @@ public:
 private:
     time_point then, now;
 };
+
+#endif //MSTAR_CPP_TIMER_H

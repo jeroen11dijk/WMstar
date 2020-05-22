@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MSTAR_CPP_CONFIG_KEY_H
+#define MSTAR_CPP_CONFIG_KEY_H
 
 #include <iostream>
 #include <vector>
@@ -34,3 +35,5 @@ struct config_key_hash {
         return hash;
     }
 };
+
+#endif //MSTAR_CPP_CONFIG_KEY_H

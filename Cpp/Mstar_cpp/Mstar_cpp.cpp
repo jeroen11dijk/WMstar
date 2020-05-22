@@ -1,143 +1,9 @@
 #include <algorithm>
 #include "Mstar_cpp.h"
+#include "inc/Graph.h"
+#include "inc/Utils.h"
 
 using namespace std;
-
-class CompareTuple {
-public:
-    bool operator()(std::tuple<int, int, Coordinate> &t1, std::tuple<int, int, Coordinate> &t2) {
-        if (std::get<0>(t1) == std::get<0>(t2)) {
-            return std::get<1>(t1) > std::get<1>(t2);
-        } else {
-            return std::get<0>(t1) > std::get<0>(t2);
-        }
-    }
-};
-
-int euclidian_distance(Coordinate a, Coordinate b) {
-    return abs(a.a - b.a) + abs(a.b - b.b);
-}
-
-bool isSubset(unordered_set<int> &a, unordered_set<int> &b) {
-    if (a.size() > b.size()) {
-        return false;
-    }
-    if (a.size() == 0) {
-        return true;
-    }
-    for (auto &index : a) {
-        if (!b.count(index)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Credit: https://stackoverflow.com/a/17050528
-vector<vector<Coordinate>> cart_product(const vector<vector<Coordinate>> &v) {
-    vector<vector<Coordinate>> s = {{}};
-    for (const auto &u : v) {
-        vector<vector<Coordinate>> r;
-        for (const auto &x : s) {
-            for (const auto &y : u) {
-                r.push_back(x);
-                r.back().push_back(y);
-            }
-        }
-        s = move(r);
-    }
-    return s;
-}
-
-set<int> phi(vector<Coordinate> &v_l, const vector<Coordinate> &v_k = vector<Coordinate>{}) {
-    unordered_set<Coordinate, coordinate_hash> seen{};
-    unordered_set<Coordinate, coordinate_hash> collisions{};
-    set<int> res{};
-    for (int i = 0; i != v_l.size(); i++) {
-        if (seen.count(v_l[i])) {
-            collisions.insert(v_l[i]);
-        } else {
-            seen.insert(v_l[i]);
-        }
-        if (count(v_k.begin(), v_k.end(), v_l[i])) {
-            auto it = find(v_k.begin(), v_k.end(), v_l[i]);
-            int v_k_index = distance(v_k.begin(), it);
-            if (v_k[i] == v_l[v_k_index] && i != v_k_index) {
-                res.insert(i);
-            }
-        }
-    }
-    for (int i = 0; i != v_l.size(); i++) {
-        if (collisions.count(v_l[i])) {
-            res.insert(i);
-        }
-    }
-    return res;
-}
-
-pair<unordered_map<Coordinate, vector<Coordinate>, coordinate_hash>, unordered_map<Coordinate, int, coordinate_hash>>
-dijkstra_predecessor_and_distance(unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> &graph,
-                                  Coordinate source) {
-    unordered_map<Coordinate, int, coordinate_hash> distances;
-    unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> pred = {{source, vector<Coordinate>{}}};
-    unordered_map<Coordinate, int, coordinate_hash> seen = {{source, 0}};
-    int c = 1;
-    priority_queue<tuple<int, int, Coordinate>, vector<tuple<int, int, Coordinate>>, CompareTuple> fringe;
-    fringe.push(make_tuple(0, c, source));
-    while (!fringe.empty()) {
-        tuple<int, int, Coordinate> current = fringe.top();
-        fringe.pop();
-        int distance = get<0>(current);
-        Coordinate node = get<2>(current);
-        if (distances.count(node)) {
-            continue;
-        }
-        distances[node] = distance;
-        vector<Coordinate> neighbours = graph[node];
-        for (Coordinate &neighbour : neighbours) {
-            int neighbour_distance = distance + 1;
-            if (!seen.count(neighbour) || neighbour_distance < seen[neighbour]) {
-                seen[neighbour] = neighbour_distance;
-                c++;
-                fringe.push(make_tuple(neighbour_distance, c, neighbour));
-                pred[neighbour] = vector<Coordinate>{node};
-            } else if (neighbour_distance == seen[neighbour]) {
-                pred[neighbour].push_back(node);
-            }
-        }
-    }
-    return make_pair(pred, distances);
-}
-
-unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> create_graph(vector<vector<int>> &grid) {
-    unordered_map<Coordinate, vector<Coordinate>, coordinate_hash> graph;
-    for (int i = 0; i != grid.size(); i++) {
-        for (int j = 0; j != grid[0].size(); j++) {
-            if (grid[i][j] == 0) {
-                Coordinate current = Coordinate(j, i);
-                vector<Coordinate> neighbours;
-                if (i != 0 && grid[i - 1][j] == 0) {
-                    int up = i - 1;
-                    neighbours.emplace_back(j, up);
-                }
-                if (j != 0 && grid[i][j - 1] == 0) {
-                    int left = j - 1;
-                    neighbours.emplace_back(left, i);
-                }
-                if (i != grid.size() - 1 && grid[i + 1][j] == 0) {
-                    int down = i + 1;
-                    neighbours.emplace_back(j, down);
-                }
-                if (j != grid[0].size() - 1 && grid[i][j + 1] == 0) {
-                    int right = j + 1;
-                    neighbours.emplace_back(right, i);
-                }
-                graph[current] = neighbours;
-            }
-        }
-    }
-    return graph;
-}
 
 Mstar_cpp::Mstar_cpp(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, vector<vector<pair<int, int>>> &v_W_a,
                      vector<pair<int, int>> &v_F_a) {
@@ -149,7 +15,7 @@ Mstar_cpp::Mstar_cpp(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, v
     for (pair<int, int> &goal : v_F_a) {
         v_F.emplace_back(goal.first, goal.second);
     }
-    for (const vector<pair<int, int>>& waypoints : v_W_a) {
+    for (const vector<pair<int, int>> &waypoints : v_W_a) {
         vector<Coordinate> waypoints_i;
         for (pair<int, int> waypoint : waypoints) {
             if (waypoint.first != -1 && waypoint.second != -1) {
@@ -201,7 +67,7 @@ Mstar_cpp::Mstar_cpp(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, v
 pair<vector<vector<pair<int, int>>>, int> Mstar_cpp::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
-//        cout << v_k << endl;
+        cout << v_k << endl;
         Config_value v_k_config = configurations[v_k];
         open.pop();
         if (v_k.coordinates == v_F) {

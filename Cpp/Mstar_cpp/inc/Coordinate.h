@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MSTAR_CPP_COORDINATE_H
+#define MSTAR_CPP_COORDINATE_H
 
 #include <iostream>
 
@@ -23,3 +24,5 @@ struct coordinate_hash {
         return (coordinate.a * 0x1f1f1f1f) ^ coordinate.b;
     }
 };
+
+#endif //MSTAR_CPP_COORDINATE_H
