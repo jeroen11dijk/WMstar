@@ -1,7 +1,7 @@
 import heapq
 import itertools
 import time
-from Cpp.Mstar_cpp import python_phi
+from Cpp.Mstar_pybind import python_phi
 
 from Python.classes import Config_key, Config_value
 from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dynamic
