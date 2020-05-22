@@ -201,7 +201,7 @@ Mstar_cpp::Mstar_cpp(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, v
 pair<vector<vector<pair<int, int>>>, int> Mstar_cpp::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
-        cout << v_k << endl;
+//        cout << v_k << endl;
         Config_value v_k_config = configurations[v_k];
         open.pop();
         if (v_k.coordinates == v_F) {

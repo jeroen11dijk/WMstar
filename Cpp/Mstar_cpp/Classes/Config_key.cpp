@@ -1,4 +1,6 @@
 #include "Config_key.h"
+#include <string>
+#include <sstream>
 
 std::ostream &operator<<(std::ostream &os, const Config_key &config_key) {
     std::string coordinates = "[";
