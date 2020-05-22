@@ -1,12 +1,12 @@
 #include <algorithm>
-#include "Mstar_cpp.h"
+#include "Mstar.h"
 #include "inc/Graph.h"
 #include "inc/Utils.h"
 
 using namespace std;
 
-Mstar_cpp::Mstar_cpp(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, vector<vector<pair<int, int>>> &v_W_a,
-                     vector<pair<int, int>> &v_F_a) {
+Mstar::Mstar(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, vector<vector<pair<int, int>>> &v_W_a,
+             vector<pair<int, int>> &v_F_a) {
     n_agents = v_I_a.size();
     graph = create_graph(grid);
     for (pair<int, int> &start : v_I_a) {
@@ -64,7 +64,7 @@ Mstar_cpp::Mstar_cpp(vector<vector<int>> &grid, vector<pair<int, int>> &v_I_a, v
     open.push(Queue_entry(heuristic_configuration(v_I_key), v_I_key));
 }
 
-pair<vector<vector<pair<int, int>>>, int> Mstar_cpp::solve() {
+pair<vector<vector<pair<int, int>>>, int> Mstar::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
         cout << v_k << endl;
@@ -129,7 +129,7 @@ pair<vector<vector<pair<int, int>>>, int> Mstar_cpp::solve() {
     cout << "No path exists, or I am an idiot";
 }
 
-int Mstar_cpp::get_edge_weight(Config_key &v_k, Config_key &v_l) {
+int Mstar::get_edge_weight(Config_key &v_k, Config_key &v_l) {
     int cost = 0;
     for (int i = 0; i != n_agents; i++) {
         if (!(v_k.coordinates[i] == v_l.coordinates[i] && v_k.coordinates[i] == v_F[i] &&
@@ -140,7 +140,7 @@ int Mstar_cpp::get_edge_weight(Config_key &v_k, Config_key &v_l) {
     return cost;
 }
 
-void Mstar_cpp::backprop(Config_key &v_k, unordered_set<int> &C_l) {
+void Mstar::backprop(Config_key &v_k, unordered_set<int> &C_l) {
     time.start();
     Config_value &current_config = configurations[v_k];
     bool subset = isSubset(C_l, current_config.collisions);
@@ -160,7 +160,7 @@ void Mstar_cpp::backprop(Config_key &v_k, unordered_set<int> &C_l) {
     backprop_time2 += float(time.elapsed());
 }
 
-vector<vector<Coordinate>> Mstar_cpp::get_limited_neighbours(Config_key &v_k) {
+vector<vector<Coordinate>> Mstar::get_limited_neighbours(Config_key &v_k) {
     vector<vector<Coordinate>> options;
     for (int i = 0; i != n_agents; i++) {
         Coordinate source = v_k.coordinates[i];
@@ -197,7 +197,7 @@ vector<vector<Coordinate>> Mstar_cpp::get_limited_neighbours(Config_key &v_k) {
     }
 }
 
-int Mstar_cpp::heuristic_configuration(Config_key &v_k) {
+int Mstar::heuristic_configuration(Config_key &v_k) {
     int cost = 0;
     for (int i = 0; i != n_agents; i++) {
         int target_index = v_k.targets[i];

@@ -16,7 +16,7 @@
 #include "inc/Timer.h"
 #include "inc/Queue_entry.h"
 
-class Mstar_cpp {
+class Mstar {
 public:
 	int n_agents;
 	std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash> graph;
@@ -32,7 +32,7 @@ public:
 	float backprop_time1 = 0.0f;
 	float backprop_time2 = 0.0f;
 
-	Mstar_cpp(std::vector<std::vector<int>> & grid, std::vector<std::pair<int, int>> & v_I_a, std::vector<std::vector<std::pair<int, int>>> & v_W_a, std::vector<std::pair<int, int>> & v_F_a);
+	Mstar(std::vector<std::vector<int>> & grid, std::vector<std::pair<int, int>> & v_I_a, std::vector<std::vector<std::pair<int, int>>> & v_W_a, std::vector<std::pair<int, int>> & v_F_a);
 	std::pair<std::vector<std::vector<std::pair<int, int>>>, int> solve();
 	int get_edge_weight(Config_key & v_k, Config_key & v_l);
 	void backprop(Config_key & v_k, std::unordered_set<int> & C_l);
