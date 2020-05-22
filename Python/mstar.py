@@ -1,10 +1,11 @@
 import heapq
 import itertools
 import time
-from Cpp.Mstar_cpp import python_phi
+from Cpp.Mstar_pybind import python_phi
 
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp
+from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dynamic
+
 
 class Mstar:
     def __init__(self, graph, v_I, v_W, v_F, unordered=True, optimal=True):
@@ -21,7 +22,8 @@ class Mstar:
                 end = v_F[i]
                 if len(v_W[i]) > 1:
                     if optimal:
-                        self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
+                        # self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
+                        self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
                     else:
                         self.v_W.append(tsp_greedy(start, end, v_W[i], self.distances[i]))
                 else:
@@ -53,8 +55,7 @@ class Mstar:
                     if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
                             neighbour_coordinates[i] != self.v_F[i]:
                         neighbour_target_indices[i] += 1
-                neighbour_target_indices = tuple(neighbour_target_indices)
-                neighbour = Config_key(neighbour_coordinates, neighbour_target_indices)
+                neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
                 neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
                     neighbour_config = Config_value()

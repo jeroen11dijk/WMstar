@@ -1,4 +1,6 @@
-.idea/
-.vscode/
-/Cpp/build_py37/
-/Cpp/.vs/
+**.idea/**
+**.vscode/**
+**.vs/**
+**.build_py37/**
+**.build/**
+.pyd

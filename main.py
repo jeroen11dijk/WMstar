@@ -11,7 +11,6 @@ if __name__ == "__main__":
     unordered = sys.argv[3].lower() == 'true' if len(sys.argv) > 3 else True
     optimal = sys.argv[4].lower() == 'true' if len(sys.argv) > 4 else True
     text = "Timon. Unordered: " + str(unordered) + ". Optimal: " + str(optimal)
-    print(unordered)
     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", benchmark, "M*", text, debug)
     for problem in benchmarker:
         graph, v_I, v_W, v_F = setup_benchmark(problem)
