@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(Mstar_cpp)
+project(Mstar_pybind)
 
 add_subdirectory(pybind11)
-pybind11_add_module(Mstar_cpp Mstar_cpp.cpp)
+add_subdirectory(Mstar)
+pybind11_add_module(Mstar_cpp Mstar_pybind.cpp)
