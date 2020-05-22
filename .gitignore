@@ -3,3 +3,4 @@
 **.vs/**
 **.build_py37/**
 **.build/**
+.pyd
