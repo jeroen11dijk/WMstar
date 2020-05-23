@@ -1,10 +1,6 @@
 #include <algorithm>
 #include "../inc/Utils.h"
 
-int euclidian_distance(Coordinate a, Coordinate b) {
-    return abs(a.a - b.a) + abs(a.b - b.b);
-}
-
 bool isSubset(std::unordered_set<int> &a, std::unordered_set<int> &b) {
     if (a.size() > b.size()) {
         return false;

@@ -24,17 +24,12 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
         v_W.push_back(waypoints_i);
     }
     update_policies_distances_targets();
+    bool optimal = true;
     for (int i = 0; i != n_agents; i++) {
-        Coordinate start = v_I[i];
-        Coordinate end = v_F[i];
-        if (v_W[i].size() > 1) {
-            sort(v_W[i].begin(), v_W[i].end(),
-                 [start, end](const Coordinate &a, const Coordinate &b) -> bool {
-                     float a_ratio = float(euclidian_distance(a, start)) / float(euclidian_distance(a, end));
-                     float b_ratio = float(euclidian_distance(b, start)) / float(euclidian_distance(b, end));
-                     return a_ratio < b_ratio;
-                 });
-            std::vector<Coordinate> temp = tsp_greedy(start, end, v_W[i], distances[i]);
+        if (optimal) {
+            v_W[i] = tsp_dynamic(v_I[i], v_F[i], v_W[i], distances[i]);
+        } else {
+            v_W[i] = tsp_greedy(v_I[i], v_F[i], v_W[i], distances[i]);
         }
     }
     update_policies_distances_targets();

@@ -1,5 +1,8 @@
 #include <queue>
 #include <algorithm>
+#include <set>
+#include <numeric>
+#include <cmath>
 #include "../inc/Graph.h"
 
 bool CompareTuple::operator()(std::tuple<int, int, Coordinate> &t1, std::tuple<int, int, Coordinate> &t2) {
@@ -75,31 +78,33 @@ dijkstra_predecessor_and_distance(std::unordered_map<Coordinate, std::vector<Coo
     return make_pair(pred, distances);
 }
 
-bool sort_pair(const std::pair<int, Coordinate> & a, std::pair<int, Coordinate> & b) {
+bool sort_pair(const std::pair<int, Coordinate> &a, std::pair<int, Coordinate> &b) {
     return a.first < b.first;
 }
 
 std::vector<Coordinate> tsp_greedy(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
                                    std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances) {
     std::unordered_map<Coordinate, std::vector<std::pair<int, Coordinate>>, coordinate_hash> graph;
-    std::vector<Coordinate> nodes;
-    nodes.emplace_back(start);
-    nodes.emplace_back(end);
-    nodes.insert(nodes.end(), waypoints.begin(), waypoints.end());
-    for (int i = 0; i != nodes.size(); i++) {
-        Coordinate current = nodes[i];
+    Coordinate dummy = Coordinate(-1, -1);
+    graph[start] = {std::make_pair(distances.back()[start], end), std::make_pair(0, dummy)};
+    graph[end] = {std::make_pair(distances.back()[start], start), std::make_pair(0, dummy)};
+    graph[dummy] = {std::make_pair(0, start), std::make_pair(0, end)};
+    for (int i = 0; i != waypoints.size(); i++) {
+        Coordinate current = waypoints[i];
         graph[current] = {};
-        if (current == start || current == end) {
-            graph[current].emplace_back(std::make_pair(0, Coordinate(-1, -1)));
-        }
-        for (Coordinate other : nodes) {
+        for (Coordinate other : waypoints) {
             graph[current].emplace_back(std::make_pair(distances[i][other], other));
         }
         graph[current].emplace_back(std::make_pair(distances[i][start], start));
-        graph[current].emplace_back(std::make_pair(distances[-1][current], end));
+        graph[current].emplace_back(std::make_pair(distances[i][end], end));
         std::sort(graph[current].begin(), graph[current].end(), sort_pair);
+        // Add this way point to start and end
+        graph[start].emplace_back(std::make_pair(distances[i][start], current));
+        graph[end].emplace_back(std::make_pair(distances[i][end], current));
     }
-    int n_nodes = nodes.size() + 1;
+    std::sort(graph[start].begin(), graph[start].end(), sort_pair);
+    std::sort(graph[end].begin(), graph[end].end(), sort_pair);
+    int n_nodes = waypoints.size() + 3;
     std::vector<Coordinate> visited = {end};
     Coordinate current = end;
     while (visited.size() < n_nodes) {
@@ -115,9 +120,133 @@ std::vector<Coordinate> tsp_greedy(Coordinate &start, Coordinate &end, std::vect
         visited.emplace_back(next);
         current = next;
     }
-    std::cout << "Path" << std::endl;
-    for (auto loc : visited) {
-        std::cout << loc << std::endl;
-    }
+    visited.erase(visited.begin(), visited.begin() + 3);
     return visited;
+}
+
+std::vector<Coordinate> tsp_dynamic(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
+                                    std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances) {
+    std::vector<std::vector<int>> matrix;
+    Coordinate dummy = Coordinate(-1, -1);
+    std::vector<Coordinate> nodes = {start, dummy, end};
+    nodes.insert(nodes.end(), waypoints.begin(), waypoints.end());
+    matrix.push_back({0, 0, distances.back()[start]});
+    matrix.push_back({0, 0, 0});
+    matrix.push_back({distances.back()[start], 0, 0});
+    for (int i = 0; i != waypoints.size(); i++) {
+        matrix[0].push_back(distances[i][start]);
+        matrix[1].push_back(INT_MAX);
+        matrix[2].push_back(distances[i][end]);
+        std::vector<int> current_row = {distances[i][start], INT_MAX, distances[i][end]};
+        for (Coordinate other : waypoints) {
+            current_row.push_back(distances[i][other]);
+        }
+        matrix.push_back(current_row);
+    }
+    std::vector<int> indices = held_karp(matrix);
+    std::vector<Coordinate> res;
+    res.reserve(indices.size());
+    for (int index : indices) {
+        res.emplace_back(nodes[index]);
+    }
+    return std::vector<Coordinate>(res.begin() + 1, res.end() - 2);
+}
+
+struct pairhash {
+public:
+    template<typename T, typename U>
+    std::size_t operator()(const std::pair<T, U> &x) const {
+        return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+    }
+};
+
+std::vector<int> held_karp(std::vector<std::vector<int>> matrix) {
+    int n = matrix.size();
+    std::unordered_map<std::pair<int, int>, std::pair<int, int>, pairhash> C;
+    for (int k = 1; k != n; k++) {
+        C[std::make_pair(1 << k, k)] = std::make_pair(matrix[0][k], 0);
+    }
+    for (int subset_size = 2; subset_size != n; subset_size++) {
+        std::vector<int> range(n - 1);
+        std::iota(std::begin(range), std::end(range), 1);
+        for (const std::vector<int>& subset : combinations(range, subset_size)) {
+            int bits = 0;
+            for (int bit : subset) {
+                bits |= 1 << bit;
+            }
+            for (int k : subset) {
+                int prev = bits & ~(1 << k);
+                std::vector<std::pair<int, int>> res;
+                for (int m : subset) {
+                    if (m == 0 || k == 0) {
+                        continue;
+                    }
+                    if (C[std::make_pair(prev, m)].first + matrix[m][k] > 0) {
+                        res.emplace_back(std::make_pair(C[std::make_pair(prev, m)].first + matrix[m][k], m));
+                    } else {
+                        res.emplace_back(std::make_pair(INT_MAX, m));
+                    }
+                }
+                sort(res.begin(), res.end());
+                C[std::make_pair(bits, k)] = res[0];
+            }
+        }
+    }
+    int bits = int(pow(2, n)) - 2;
+    std::vector<std::pair<int, int>> res;
+    for (int k = 1; k != n; k++) {
+        if (C[std::make_pair(bits, k)].first + matrix[k][0] > 0) {
+            res.emplace_back(C[std::make_pair(bits, k)].first + matrix[k][0], k);
+        } else {
+            res.emplace_back(INT_MAX, k);
+        }
+    }
+    sort(res.begin(), res.end());
+    int parent = res[0].second;
+    std::vector<int> path;
+    for (int i = 0; i != n - 1; i++) {
+        path.emplace_back(parent);
+        int new_bits = bits & ~(1 << parent);
+        parent = C[std::make_pair(bits, parent)].second;
+        bits = new_bits;
+    }
+    path.emplace_back(0);
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
+std::vector<std::vector<int>> combinations(std::vector<int> src, int r) {
+    std::vector<std::vector<int>> cs;
+    if (r == 1) {
+        for (auto i = 0; i < src.size(); i++) {
+            std::vector<int> c;
+            c.push_back(src[i]);
+            cs.push_back(c);
+        }
+        return cs;
+    }
+    int *places = (int *) malloc(sizeof(int) * r);
+    for (auto i = 0; i < r; i++) places[i] = i;
+    while (true) {
+        // push_back another combination
+        std::vector<int> c;
+        c.reserve(r);
+        for (auto i = 0; i < r; i++) {
+            c.push_back(src[places[i]]);
+        }
+        cs.push_back(c);
+        // update places
+        for (auto i = 0; i < r - 1; i++) {
+            places[i]++;
+            if (places[i + 1] == places[i]) {
+                places[i] = i;
+                if (i == r - 2) places[r - 1]++;
+                continue;
+            }
+            break;
+        }
+        if (places[r - 1] == src.size()) break;
+    }
+    free(places);
+    return cs;
 }

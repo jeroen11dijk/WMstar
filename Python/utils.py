@@ -50,6 +50,7 @@ def tsp_greedy(start, end, waypoints, distances):
     visited = []
     visited.append(end)
     current = end
+    print(graph[start])
     while len(visited) < n_nodes:
         index = 0
         while graph[current][index][1] in visited:
