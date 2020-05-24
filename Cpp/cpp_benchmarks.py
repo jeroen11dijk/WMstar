@@ -1,12 +1,12 @@
 import math
 from copy import copy
 
-from Cpp.Mstar_cpp import Mstar_cpp
+from Cpp.Mstar_pybind import Mstar
 from mapfw import MapfwBenchmarker
 
 
 def cpp_test(G, v_I, v_W, v_F, min_cost):
-    res = Mstar_cpp(G, v_I, v_W, v_F).solve()
+    res = Mstar(G, v_I, v_W, v_F).solve()
     if res[1] < min_cost:
         print(res[1])
     assert res[1] < min_cost or math.isclose(res[1], min_cost)
@@ -52,20 +52,20 @@ class TestBenchmarks:
         cpp_benchmark(6, 25)
 
     def test_cpp_benchmark_7(self):
-        cpp_benchmark(7, 278)
+        cpp_benchmark(7, 204)
 
     def test_cpp_benchmark_8(self):
-        cpp_benchmark(8, 1576)
+        cpp_benchmark(8, 821)
 
     def test_cpp_benchmark_9(self):
-        cpp_benchmark(9, 2438)
+        cpp_benchmark(9, 1744)
 
     # TODO cant solve it within a decent time
     # def test_cpp_benchmark_10(self):
-    #     benchmark(10, xx)
+    #     cpp_benchmark(10, xx)
 
     def test_cpp_benchmark_11(self):
-        cpp_benchmark(11, 100)
+        cpp_benchmark(11, 98)
 
     def test_cpp_benchmark_12(self):
         cpp_benchmark(12, 112)
@@ -74,10 +74,10 @@ class TestBenchmarks:
         cpp_benchmark(13, 47)
 
     def test_cpp_benchmark_14(self):
-        cpp_benchmark(14, 72)
+        cpp_benchmark(14, 33)
 
     def test_cpp_benchmark_15(self):
-        cpp_benchmark(15, 72)
+        cpp_benchmark(15, 68)
 
     def test_cpp_benchmark_16(self):
         cpp_benchmark(16, 68)
@@ -86,13 +86,22 @@ class TestBenchmarks:
         cpp_benchmark(17, 49)
 
     def test_cpp_benchmark_18(self):
-        cpp_benchmark(18, 52)
+        cpp_benchmark(18, 50)
 
     def test_cpp_benchmark_20(self):
         cpp_benchmark(20, 39)
 
     def test_cpp_benchmark_22(self):
-        cpp_benchmark(22, 129)
+        cpp_benchmark(22, 109)
 
     def test_cpp_benchmark_25(self):
-        cpp_benchmark(25, 171)
+        cpp_benchmark(25, 116)
+
+    def test_cpp_benchmark_27(self):
+        cpp_benchmark(27, 159)
+
+    def test_cpp_benchmark_33(self):
+        cpp_benchmark(33, 328)
+
+    def test_cpp_benchmark_56(self):
+        cpp_benchmark(56, 23)

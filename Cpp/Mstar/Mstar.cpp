@@ -70,6 +70,7 @@ void Mstar::update_policies_distances_targets() {
 std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
+        std::cout << v_k << std::endl;
         Config_value v_k_config = configurations[v_k];
         open.pop();
         if (v_k.coordinates == v_F) {
