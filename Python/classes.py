@@ -1,9 +1,10 @@
+import math
+from collections import namedtuple
 from dataclasses import dataclass, field
 from typing import List, Set
-from collections import namedtuple
-import math
 
 Config_key = namedtuple('Config_key', 'coordinates target_indices')
+
 
 @dataclass
 class Config_value:

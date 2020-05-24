@@ -1,7 +1,7 @@
-from heapq import heappush, heappop
 import itertools
-from collections import deque
 import math
+from heapq import heappush, heappop
+
 
 def euclidian_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
@@ -70,7 +70,8 @@ def tsp_dynamic(start, end, waypoints, distances):
     matrix.append([0, 0, 0] + len(waypoints) * [math.inf])
     matrix.append([distances[-1][start], 0, 0] + [distances[i][end] for i in range(len(waypoints))])
     for index, waypoint in enumerate(waypoints):
-         matrix.append([distances[index][start], math.inf, distances[-1][waypoint]] + [distances[i][waypoint] for i in range(len(waypoints))])
+        matrix.append([distances[index][start], math.inf, distances[-1][waypoint]] + [distances[i][waypoint] for i in
+                                                                                      range(len(waypoints))])
     indices = held_karp(matrix)
     best_path = []
     for index in indices:
@@ -120,7 +121,7 @@ def held_karp(dists):
                 C[(bits, k)] = min(res)
 
     # We're interested in all bits but the least significant (the start state)
-    bits = (2**n - 1) - 1
+    bits = (2 ** n - 1) - 1
 
     # Calculate optimal cost
     res = []
@@ -141,3 +142,15 @@ def held_karp(dists):
 
     return list(reversed(path))
 
+
+def phi(v_l, v_k):
+    seen = set()
+    double = []
+    edges = {k: l for k, l in zip(v_k, v_l)}
+    for i, val in enumerate(v_l):
+        if val in seen or val != v_k[i] and val in edges and edges[val] == v_k[i]:
+            double.append(val)
+        else:
+            seen.add(val)
+    double = set(double)
+    return [i for i, val in enumerate(v_l) if val in double]

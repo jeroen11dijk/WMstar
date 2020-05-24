@@ -62,74 +62,77 @@ def setup_benchmark(problem):
 
 class TestBenchmarks:
     def test_python_benchmark_1(self):
-        python_benchmark(1, 26)
+        python_benchmark(1, 36)
 
     def test_python_benchmark_2(self):
-        python_benchmark(2, 46)
+        python_benchmark(2, 48)
 
     def test_python_benchmark_3(self):
-        python_benchmark(3, 73)
+        python_benchmark(3, 75)
 
     def test_python_benchmark_4(self):
-        python_benchmark(4, 23)
+        python_benchmark(4, 26)
 
     def test_python_benchmark_5(self):
-        python_benchmark(5, 116)
+        python_benchmark(5, 119)
 
     def test_python_benchmark_6(self):
-        python_benchmark(6, 25)
+        python_benchmark(6, 27)
 
     def test_python_benchmark_7(self):
-        python_benchmark(7, 204)
+        python_benchmark(7, 205)
 
     def test_python_benchmark_8(self):
         python_benchmark(8, 821)
 
     def test_python_benchmark_9(self):
-        python_benchmark(9, 1744)
+        python_benchmark(9, 1747)
 
     # TODO cant solve it within a decent time
     # def test_python_benchmark_10(self):
     #     benchmark(10, xx)
 
     def test_python_benchmark_11(self):
-        python_benchmark(11, 98)
+        python_benchmark(11, 100)
 
     def test_python_benchmark_12(self):
-        python_benchmark(12, 112)
+        python_benchmark(12, 115)
 
     def test_python_benchmark_13(self):
-        python_benchmark(13, 47)
+        python_benchmark(13, 52)
 
     def test_python_benchmark_14(self):
-        python_benchmark(14, 33)
+        python_benchmark(14, 34)
 
     def test_python_benchmark_15(self):
-        python_benchmark(15, 68)
+        python_benchmark(15, 70)
 
     def test_python_benchmark_16(self):
-        python_benchmark(16, 68)
+        python_benchmark(16, 70)
 
     def test_python_benchmark_17(self):
-        python_benchmark(17, 49)
+        python_benchmark(17, 53)
 
     def test_python_benchmark_18(self):
-        python_benchmark(18, 50)
+        python_benchmark(18, 53)
 
     def test_python_benchmark_20(self):
-        python_benchmark(20, 39)
+        python_benchmark(20, 43)
 
     def test_python_benchmark_22(self):
-        python_benchmark(22, 109)
+        python_benchmark(22, 115)
 
     def test_python_benchmark_25(self):
-        python_benchmark(25, 116)
+        python_benchmark(25, 120)
 
     def test_python_benchmark_27(self):
-        python_benchmark(27, 159)
+        python_benchmark(27, 169)
 
     def test_python_benchmark_33(self):
-        python_benchmark(33, 328)
+        python_benchmark(33, 333)
 
     def test_python_benchmark_56(self):
-        python_benchmark(56, 328)
+        python_benchmark(56, 39)
+
+    def test_python_benchmark_60(self):
+        python_benchmark(60, 65)

@@ -1,10 +1,10 @@
 import heapq
 import itertools
-import time
+
 from Cpp.Mstar_pybind import python_phi
 
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dynamic
+from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dynamic, phi
 
 
 class Mstar:
@@ -47,7 +47,7 @@ class Mstar:
                 res = []
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in current_config.back_ptr])
-                return res, current_config.cost
+                return res, current_config.cost + self.n_agents
             neighbours = self.get_limited_neighbours(current)
             for neighbour_coordinates in neighbours:
                 neighbour_target_indices = list(current.target_indices)
@@ -56,7 +56,7 @@ class Mstar:
                             neighbour_coordinates[i] != self.v_F[i]:
                         neighbour_target_indices[i] += 1
                 neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
-                neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
+                neighbour_collisions = phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
                     neighbour_config = Config_value()
                 else:
@@ -129,7 +129,7 @@ class Mstar:
             neighbours.append((options[0][0],))
             return neighbours
         for element in itertools.product(*options):
-                neighbours.append(element)
+            neighbours.append(element)
         return neighbours
 
     def backprop(self, key, collisions):
@@ -147,9 +147,18 @@ class Mstar:
     def get_edge_weight(self, prev_coordinates, key):
         cost = 0
         for i in range(self.n_agents):
-            if not (prev_coordinates[i] == key.coordinates[i] == self.targets[i][-1] and key.target_indices[i] == len(
-                    self.targets[i]) - 1):
+            visited_waypoints = key.target_indices[i] == len(self.targets[i]) - 1
+            prev = prev_coordinates[i]
+            current = key.coordinates[i]
+            target = self.targets[i][-1]
+            if not (prev == current == target and visited_waypoints):
                 cost += 1
+            if prev == target and current != target and visited_waypoints:
+                cost += 1
+                if key in self.configurations:
+                    for back in reversed(self.configurations[key].back_ptr):
+                        if back[i] == target:
+                            cost += 1
         return cost
 
     def heuristic_configuration(self, key):
