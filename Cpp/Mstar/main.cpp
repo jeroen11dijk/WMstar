@@ -32,7 +32,7 @@ int main() {
 //    std::vector<std::vector<std::pair<int, int>>> v_W_a{{std::make_pair(5,4), std::make_pair(0,3), std::make_pair(1,5)},
 //                                                        {std::make_pair(1,3), std::make_pair(4,1), std::make_pair(4,3)}};
 //    vector<pair<int, int>> v_F_a{std::make_pair(6, 5), std::make_pair(5, 5)};
-    Mstar lol = Mstar(grid, v_I_a, v_W_a, v_F_a);
+    Mstar lol = Mstar(grid, v_I_a, v_W_a, v_F_a, true);
     std::vector<std::vector<std::pair<int, int>>> res = lol.solve().first;
     for (const auto& agent : res) {
         cout << "[";

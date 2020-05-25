@@ -1,8 +1,13 @@
 import math
 
-from mapfw import MapfwBenchmarker
+import pytest
+from mapfw import MapfwBenchmarker, get_all_benchmarks
 
 from Python.mstar import Mstar
+
+min_cost = {1: 36, 2: 48, 3: 75, 4: 26, 5: 119, 6: 27, 7: 205, 8: 821, 9: 1747, 10: 1590, 11: 110, 12: 115, 13: 52,
+            14: 34, 15: 70, 16: 70, 17: 53, 18: 53, 19: 4410, 20: 43, 21: 252, 22: 115, 23: 144, 24: 1542, 25: 120,
+            27: 169, 33: 333, 54: 0, 55: 28, 56: 39, 58: 0, 59: 824, 60: 65, 61: 1156, 62: 14, 64: 96}
 
 
 def python_test(G, v_I, v_W, v_F, min_cost):
@@ -19,13 +24,6 @@ def python_test(G, v_I, v_W, v_F, min_cost):
                 assert list(waypoint) in paths[i]
     for i in range(len(v_F)):
         assert list(v_F[i]) == paths[i][-1]
-
-
-def python_benchmark(i, min_cost):
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", i, "M*", "Test", True)
-    for problem in benchmarker:
-        graph, v_I, v_W, v_F = setup_benchmark(problem)
-        python_test(graph, v_I, v_W, v_F, min_cost)
 
 
 def setup_benchmark(problem):
@@ -60,82 +58,9 @@ def setup_benchmark(problem):
     return grap_new, v_I, v_W, v_F
 
 
-class TestBenchmarks:
-    def test_python_benchmark_1(self):
-        python_benchmark(1, 36)
-
-    def test_python_benchmark_2(self):
-        python_benchmark(2, 48)
-
-    def test_python_benchmark_3(self):
-        python_benchmark(3, 75)
-
-    def test_python_benchmark_4(self):
-        python_benchmark(4, 26)
-
-    def test_python_benchmark_5(self):
-        python_benchmark(5, 119)
-
-    def test_python_benchmark_6(self):
-        python_benchmark(6, 27)
-
-    def test_python_benchmark_7(self):
-        python_benchmark(7, 205)
-
-    def test_python_benchmark_8(self):
-        python_benchmark(8, 821)
-
-    def test_python_benchmark_9(self):
-        python_benchmark(9, 1747)
-
-    # TODO cant solve it within a decent time
-    # def test_python_benchmark_10(self):
-    #     benchmark(10, xx)
-
-    def test_python_benchmark_11(self):
-        python_benchmark(11, 100)
-
-    def test_python_benchmark_12(self):
-        python_benchmark(12, 115)
-
-    def test_python_benchmark_13(self):
-        python_benchmark(13, 52)
-
-    def test_python_benchmark_14(self):
-        python_benchmark(14, 34)
-
-    def test_python_benchmark_15(self):
-        python_benchmark(15, 70)
-
-    def test_python_benchmark_16(self):
-        python_benchmark(16, 70)
-
-    def test_python_benchmark_17(self):
-        python_benchmark(17, 53)
-
-    def test_python_benchmark_18(self):
-        python_benchmark(18, 53)
-
-    def test_python_benchmark_20(self):
-        python_benchmark(20, 43)
-
-    def test_python_benchmark_22(self):
-        python_benchmark(22, 115)
-
-    def test_python_benchmark_25(self):
-        python_benchmark(25, 120)
-
-    def test_python_benchmark_27(self):
-        python_benchmark(27, 169)
-
-    def test_python_benchmark_33(self):
-        python_benchmark(33, 333)
-
-    def test_python_benchmark_56(self):
-        python_benchmark(56, 39)
-
-    def test_python_benchmark_60(self):
-        python_benchmark(60, 65)
-
-    def test_python_benchmark_64(self):
-        python_benchmark(64, 96)
+@pytest.mark.parametrize("test_id", get_all_benchmarks(without=[10, 19, 21, 23, 24, 54, 58, 59, 61]))
+def test_python_benchmark(test_id):
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", test_id, "M*", "Test", True)
+    for problem in benchmarker:
+        graph, v_I, v_W, v_F = setup_benchmark(problem)
+        python_test(graph, v_I, v_W, v_F, min_cost[test_id])
