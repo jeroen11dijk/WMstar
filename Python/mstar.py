@@ -40,7 +40,7 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
-            print(current, current_config.cost)
+            print(current, current_config.waiting)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
@@ -64,15 +64,17 @@ class Mstar:
                 neighbour_config.collisions.update(neighbour_collisions)
                 neighbour_config.back_set.add(current)
                 self.backprop(current, current_config, neighbour_config.collisions)
-                f = self.get_edge_weight(current.coordinates, neighbour, neighbour_config.waiting)
+                f = self.get_edge_weight(current.coordinates, neighbour, current_config.waiting)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
                 if len(neighbour_collisions) == 0 and new_cost_v_l < old_cost_v_l:
                     neighbour_config.cost = current_config.cost + f
                     neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
                     for i in range(self.n_agents):
-                        if neighbour_coordinates[i] == current.coordinates[i]:
-                            neighbour_config.waiting[i] += 1
+                        if neighbour_coordinates[i] == self.v_F[i]:
+                            neighbour_config.waiting[i] = current_config.waiting[i] + 1
+                        else:
+                            neighbour_config.waiting[i] = 0
                     configurations[neighbour] = neighbour_config
                     heuristic = self.heuristic_configuration(neighbour)
                     heapq.heappush(self.open, (neighbour_config.cost + heuristic, neighbour))
@@ -152,9 +154,9 @@ class Mstar:
             prev = prev_coordinates[i]
             current = key.coordinates[i]
             target = self.targets[i][-1]
-            # if prev == target and current != target and visited_waypoints:
-            #     cost += 1 + waiting[i]
-            if not (prev == current == target and visited_waypoints):
+            if prev == target and current != target and visited_waypoints:
+                cost += 1 + waiting[i]
+            elif not (prev == current == target and visited_waypoints):
                 cost += 1
         return cost
 

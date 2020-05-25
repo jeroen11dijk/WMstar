@@ -136,3 +136,6 @@ class TestBenchmarks:
 
     def test_python_benchmark_60(self):
         python_benchmark(60, 65)
+
+    def test_python_benchmark_64(self):
+        python_benchmark(64, 96)
