@@ -5,7 +5,7 @@
 
 Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int>> &v_I_a,
              std::vector<std::vector<std::pair<int, int>>> &v_W_a,
-             std::vector<std::pair<int, int>> &v_F_a) {
+             std::vector<std::pair<int, int>> &v_F_a, const bool &unordered) {
     n_agents = v_I_a.size();
     graph = create_graph(grid);
     for (std::pair<int, int> &start : v_I_a) {
@@ -24,7 +24,6 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
         v_W.push_back(waypoints_i);
     }
     update_policies_distances_targets();
-    bool unordered = true;
     if (unordered) {
         for (int i = 0; i != n_agents; i++) {
             v_W[i] = tsp_dynamic(v_I[i], v_F[i], v_W[i], distances[i]);

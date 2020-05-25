@@ -44,6 +44,6 @@ PYBIND11_MODULE(Mstar_pybind, m) {
     m.def("python_phi", &python_phi);
 
     py::class_<Mstar>(m, "Mstar")
-            .def(py::init<vector<vector<int>>, vector<pair<int, int>>, vector<vector<pair<int, int>>>, vector<pair<int, int>>>())
+            .def(py::init<vector<vector<int>>, vector<pair<int, int>>, vector<vector<pair<int, int>>>, vector<pair<int, int>>, bool>())
             .def("solve", &Mstar::solve);
 }
