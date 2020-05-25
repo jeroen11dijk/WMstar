@@ -71,7 +71,7 @@ class Mstar:
                     neighbour_config.cost = current_config.cost + f
                     neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
                     for i in range(self.n_agents):
-                        if neighbour_coordinates[i] == self.v_F[i]:
+                        if neighbour_coordinates[i] == current.coordinates[i]:
                             neighbour_config.waiting[i] = current_config.waiting[i] + 1
                         else:
                             neighbour_config.waiting[i] = 0
