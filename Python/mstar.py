@@ -32,8 +32,7 @@ class Mstar:
         self.configurations = {}
         self.open = []
         v_I_key = Config_key(v_I, (0,) * self.n_agents)
-        self.configurations[v_I_key] = Config_value()
-        self.configurations[v_I_key].cost = 0
+        self.configurations[v_I_key] = Config_value(cost=0, waiting=self.n_agents*[0])
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
     def solve(self):
@@ -41,6 +40,7 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
+            print(current, current_config.cost)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
@@ -48,7 +48,7 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in current_config.back_ptr])
                 return res, current_config.cost + self.n_agents
-            neighbours = self.get_limited_neighbours(current)
+            neighbours = self.get_limited_neighbours(current, current_config.collisions)
             for neighbour_coordinates in neighbours:
                 neighbour_target_indices = list(current.target_indices)
                 for i in range(self.n_agents):
@@ -56,20 +56,23 @@ class Mstar:
                             neighbour_coordinates[i] != self.v_F[i]:
                         neighbour_target_indices[i] += 1
                 neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
-                neighbour_collisions = phi(neighbour.coordinates, current.coordinates)
+                neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
-                    neighbour_config = Config_value()
+                    neighbour_config = Config_value(waiting=self.n_agents*[0])
                 else:
                     neighbour_config = configurations[neighbour]
                 neighbour_config.collisions.update(neighbour_collisions)
                 neighbour_config.back_set.add(current)
-                self.backprop(current, neighbour_config.collisions)
-                f = self.get_edge_weight(current.coordinates, neighbour)
+                self.backprop(current, current_config, neighbour_config.collisions)
+                f = self.get_edge_weight(current.coordinates, neighbour, neighbour_config.waiting)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
                 if len(neighbour_collisions) == 0 and new_cost_v_l < old_cost_v_l:
                     neighbour_config.cost = current_config.cost + f
                     neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
+                    for i in range(self.n_agents):
+                        if neighbour_coordinates[i] == current.coordinates[i]:
+                            neighbour_config.waiting[i] += 1
                     configurations[neighbour] = neighbour_config
                     heuristic = self.heuristic_configuration(neighbour)
                     heapq.heappush(self.open, (neighbour_config.cost + heuristic, neighbour))
@@ -97,14 +100,13 @@ class Mstar:
             self.distances.append(distance_i)
             self.targets.append(targets_i)
 
-    def get_limited_neighbours(self, key):
+    def get_limited_neighbours(self, key, collisions):
         neighbours = []
         options = []
-        configurations = self.configurations
         for i in range(self.n_agents):
             coordinates_i = key.coordinates[i]
             options_i = []
-            if i in configurations[key].collisions:
+            if i in collisions:
                 # ADD all the neighbours
                 target_index = key.target_indices[i]
                 policy = self.policies[i][target_index]
@@ -132,33 +134,28 @@ class Mstar:
             neighbours.append(element)
         return neighbours
 
-    def backprop(self, key, collisions):
-        current_config = self.configurations[key]
-        if not collisions.issubset(current_config.collisions):
-            current_config.collisions.update(collisions)
+    def backprop(self, key, config, collisions):
+        if not collisions.issubset(config.collisions):
+            config.collisions.update(collisions)
             # Technically we should check whether its not already in open
             # But that takes too much time and it will settle it self
             # if not any(v_k in configuration for configuration in open):
             heuristic = self.heuristic_configuration(key)
-            heapq.heappush(self.open, (current_config.cost + heuristic, key))
-            for previous in current_config.back_set:
-                self.backprop(previous, current_config.collisions)
+            heapq.heappush(self.open, (config.cost + heuristic, key))
+            for previous in config.back_set:
+                self.backprop(previous, self.configurations[previous], config.collisions)
 
-    def get_edge_weight(self, prev_coordinates, key):
+    def get_edge_weight(self, prev_coordinates, key, waiting):
         cost = 0
         for i in range(self.n_agents):
             visited_waypoints = key.target_indices[i] == len(self.targets[i]) - 1
             prev = prev_coordinates[i]
             current = key.coordinates[i]
             target = self.targets[i][-1]
+            # if prev == target and current != target and visited_waypoints:
+            #     cost += 1 + waiting[i]
             if not (prev == current == target and visited_waypoints):
                 cost += 1
-            if prev == target and current != target and visited_waypoints:
-                cost += 1
-                if key in self.configurations:
-                    for back in reversed(self.configurations[key].back_ptr):
-                        if back[i] == target:
-                            cost += 1
         return cost
 
     def heuristic_configuration(self, key):

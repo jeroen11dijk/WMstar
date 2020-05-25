@@ -146,7 +146,9 @@ def held_karp(dists):
 def phi(v_l, v_k):
     seen = set()
     double = []
-    edges = {k: l for k, l in zip(v_k, v_l)}
+    edges = {}
+    for i in range(len(v_k)):
+        edges[v_k[i]] = v_l[i]
     for i, val in enumerate(v_l):
         if val in seen or val != v_k[i] and val in edges and edges[val] == v_k[i]:
             double.append(val)

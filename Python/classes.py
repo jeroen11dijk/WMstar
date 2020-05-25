@@ -12,6 +12,7 @@ class Config_value:
     back_set: Set[any] = field(default_factory=set)
     collisions: Set[any] = field(default_factory=set)
     cost: int = math.inf
+    waiting: List[any] = field(default_factory=list)
 
     def __str__(self):
         return str([self.cost, self.collisions, self.back_set, self.back_ptr])

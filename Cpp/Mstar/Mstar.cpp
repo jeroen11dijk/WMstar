@@ -3,9 +3,9 @@
 #include "inc/Graph.h"
 #include "inc/Utils.h"
 
-Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int>> &v_I_a,
-             std::vector<std::vector<std::pair<int, int>>> &v_W_a,
-             std::vector<std::pair<int, int>> &v_F_a) {
+Mstar::Mstar(std::vector<std::vector<int>>& grid, std::vector<std::pair<int, int>>& v_I_a,
+             std::vector<std::vector<std::pair<int, int>>>& v_W_a,
+             std::vector<std::pair<int, int>>& v_F_a) {
     n_agents = v_I_a.size();
     graph = create_graph(grid);
     for (std::pair<int, int> &start : v_I_a) {

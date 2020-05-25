@@ -35,7 +35,7 @@ public:
     float heuristic_configuration_time = 0.0f;
     float phi_time = 0.0f;
 
-	Mstar(std::vector<std::vector<int>> & grid, std::vector<std::pair<int, int>> & v_I_a, std::vector<std::vector<std::pair<int, int>>> & v_W_a, std::vector<std::pair<int, int>> & v_F_a);
+	Mstar(std::vector<std::vector<int>>& grid, std::vector<std::pair<int, int>>& v_I_a, std::vector<std::vector<std::pair<int, int>>>& v_W_a, std::vector<std::pair<int, int>>& v_F_a);
     void update_policies_distances_targets();
 	std::pair<std::vector<std::vector<std::pair<int, int>>>, int> solve();
 	int get_edge_weight(Config_key & v_k, Config_key & v_l);
