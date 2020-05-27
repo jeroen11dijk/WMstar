@@ -7,10 +7,10 @@
 
 class Queue_entry {
 public:
-    int cost;
+    float cost;
     Config_key config_key;
 
-    Queue_entry(int cost, Config_key config_key) : cost(cost), config_key(config_key) {};
+    Queue_entry(float cost, Config_key config_key) : cost(cost), config_key(config_key) {};
 
     friend std::ostream &operator<<(std::ostream &os, const Queue_entry &queue_entry);
 

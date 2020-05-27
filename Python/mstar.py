@@ -8,27 +8,23 @@ from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dyna
 
 
 class Mstar:
-    def __init__(self, graph, v_I, v_W, v_F, unordered=True, optimal=True):
+    def __init__(self, graph, v_I, v_W, v_F, inflated=False):
         self.n_agents = len(v_I)
         self.graph = graph
         self.v_I = v_I
         self.v_W = v_W
         self.v_F = v_F
+        self.inflated = inflated
         self.update_policies_distances_targets(graph)
-        if unordered:
-            self.v_W = []
-            for i in range(self.n_agents):
-                start = v_I[i]
-                end = v_F[i]
-                if len(v_W[i]) > 1:
-                    if optimal:
-                        # self.v_W.append(tsp(start, end, v_W[i], self.distances[i]))
-                        self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
-                    else:
-                        self.v_W.append(tsp_greedy(start, end, v_W[i], self.distances[i]))
-                else:
-                    self.v_W.append(v_W[i])
-            self.update_policies_distances_targets(graph)
+        self.v_W = []
+        for i in range(self.n_agents):
+            start = v_I[i]
+            end = v_F[i]
+            if len(v_W[i]) > 1:
+                self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
+            else:
+                self.v_W.append(v_W[i])
+        self.update_policies_distances_targets(graph)
         self.configurations = {}
         self.open = []
         v_I_key = Config_key(v_I, (0,) * self.n_agents)
@@ -170,4 +166,7 @@ class Mstar:
             while target_index < len(target):
                 cost += self.distances[i][target_index][target[target_index - 1]]
                 target_index += 1
-        return cost
+        if self.inflated:
+            return 1.1 * cost
+        else:
+            return cost

@@ -19,6 +19,7 @@
 class Mstar {
 public:
 	int n_agents;
+	bool inflated;
 	std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash> graph;
 	std::vector<Coordinate> v_I, v_F;
 	std::vector<std::vector<Coordinate>> v_W;
@@ -34,5 +35,5 @@ public:
 	int get_edge_weight(std::vector<Coordinate> &prev_coordinates, Config_key & key, std::vector<int> &waiting);
 	void backprop(Config_key &key, Config_value &value, std::unordered_set<int> &collisions);
 	std::vector<std::vector<Coordinate>> get_limited_neighbours(Config_key &v_k, std::unordered_set<int> &collisions);
-	int heuristic_configuration(Config_key & v_k);
+	float heuristic_configuration(Config_key & v_k);
 };

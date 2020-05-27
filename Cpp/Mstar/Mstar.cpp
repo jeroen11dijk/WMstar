@@ -5,8 +5,9 @@
 
 Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int>> &v_I_a,
              std::vector<std::vector<std::pair<int, int>>> &v_W_a,
-             std::vector<std::pair<int, int>> &v_F_a, const bool &unordered) {
+             std::vector<std::pair<int, int>> &v_F_a, const bool &inflated) {
     n_agents = v_I_a.size();
+    this->inflated = inflated;
     graph = create_graph(grid);
     for (std::pair<int, int> &start : v_I_a) {
         v_I.emplace_back(start.first, start.second);
@@ -24,12 +25,10 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
         v_W.push_back(waypoints_i);
     }
     update_policies_distances_targets();
-    if (unordered) {
-        for (int i = 0; i != n_agents; i++) {
-            v_W[i] = tsp_dynamic(v_I[i], v_F[i], v_W[i], distances[i]);
-        }
-        update_policies_distances_targets();
+    for (int i = 0; i != n_agents; i++) {
+        v_W[i] = tsp_dynamic(v_I[i], v_F[i], v_W[i], distances[i]);
     }
+    update_policies_distances_targets();
     Config_key v_I_key = Config_key(v_I, std::vector<int>(n_agents, 0));
     configurations[v_I_key] = Config_value(std::vector<int>(n_agents, 0));
     configurations[v_I_key].cost = 0;
@@ -88,7 +87,7 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
                     }
                     res.push_back(res_i);
                 }
-                return make_pair(res, v_k_config.cost + n_agents);
+                return make_pair(res, v_k_config.cost + float(n_agents));
             }
         }
         for (std::vector<Coordinate> &v_l : get_limited_neighbours(v_k, v_k_config.collisions)) {
@@ -110,8 +109,8 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
             v_l_config.back_set.insert(v_k);
             backprop(v_k, v_k_config, v_l_config.collisions);
             int f = get_edge_weight(v_k.coordinates, v_l_key, v_k_config.waiting);
-            int new_cost_v_l = v_k_config.cost + f;
-            int old_cost_v_l = v_l_config.cost;
+            float new_cost_v_l = v_k_config.cost + float(f);
+            float old_cost_v_l = v_l_config.cost;
             if (v_l_collisions.empty() && new_cost_v_l < old_cost_v_l) {
                 v_l_config.cost = new_cost_v_l;
                 v_l_config.back_ptr = v_k_config.back_ptr;
@@ -124,7 +123,7 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
                     }
                 }
                 configurations[v_l_key] = v_l_config;
-                int heuristic = heuristic_configuration(v_l_key);
+                float heuristic = heuristic_configuration(v_l_key);
                 open.push(Queue_entry(v_l_config.cost + heuristic, v_l_key));
             }
         }
@@ -152,7 +151,7 @@ void Mstar::backprop(Config_key &key, Config_value &value, std::unordered_set<in
     bool subset = isSubset(collisions, value.collisions);
     if (!subset) {
         value.collisions.insert(collisions.begin(), collisions.end());
-        int heuristic = heuristic_configuration(key);
+        float heuristic = heuristic_configuration(key);
 
         open.push(Queue_entry(value.cost + heuristic, key));
         for (Config_key v_m : value.back_set) {
@@ -200,8 +199,8 @@ std::vector<std::vector<Coordinate>> Mstar::get_limited_neighbours(Config_key &v
     return res;
 }
 
-int Mstar::heuristic_configuration(Config_key &v_k) {
-    int cost = 0;
+float Mstar::heuristic_configuration(Config_key &v_k) {
+    float cost = 0;
     for (int i = 0; i != n_agents; i++) {
         int target_index = v_k.targets[i];
         std::vector<Coordinate> targets_i = targets[i];
@@ -212,5 +211,9 @@ int Mstar::heuristic_configuration(Config_key &v_k) {
             target_index++;
         }
     }
-    return cost;
+    if (inflated) {
+        return 1.1f * cost;
+    } else {
+        return cost;
+    }
 }

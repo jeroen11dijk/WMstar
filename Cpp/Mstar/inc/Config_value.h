@@ -1,4 +1,5 @@
 #include <utility>
+#include <limits>
 
 #ifndef MSTAR_CPP_CONFIG_VALUE_H
 #define MSTAR_CPP_CONFIG_VALUE_H
@@ -8,7 +9,7 @@ public:
     std::unordered_set<Config_key, config_key_hash> back_set{};
     std::vector<std::vector<Coordinate>> back_ptr{};
     std::unordered_set<int> collisions{};
-    int cost = INT_MAX;
+    float cost = std::numeric_limits<float>::infinity();
     std::vector<int> waiting;
 
     Config_value() = default;
