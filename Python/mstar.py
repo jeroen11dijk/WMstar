@@ -56,7 +56,6 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
-            print(current_config.collisions)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
