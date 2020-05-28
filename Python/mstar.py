@@ -4,7 +4,7 @@ import itertools
 from Cpp.Mstar_pybind import python_phi
 
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_greedy, tsp_dynamic, phi
+from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic
 
 
 class Mstar:
@@ -28,7 +28,7 @@ class Mstar:
         self.configurations = {}
         self.open = []
         v_I_key = Config_key(v_I, (0,) * self.n_agents)
-        self.configurations[v_I_key] = Config_value(cost=0, waiting=self.n_agents*[0])
+        self.configurations[v_I_key] = Config_value(cost=0, waiting=self.n_agents * [0])
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
     def solve(self):
@@ -36,14 +36,13 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
-            print(current, current_config.waiting)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in current_config.back_ptr])
-                return res, current_config.cost + self.n_agents
+                return res
             neighbours = self.get_limited_neighbours(current, current_config.collisions)
             for neighbour_coordinates in neighbours:
                 neighbour_target_indices = list(current.target_indices)
@@ -54,7 +53,7 @@ class Mstar:
                 neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
                 neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
-                    neighbour_config = Config_value(waiting=self.n_agents*[0])
+                    neighbour_config = Config_value(waiting=self.n_agents * [0])
                 else:
                     neighbour_config = configurations[neighbour]
                 neighbour_config.collisions.update(neighbour_collisions)

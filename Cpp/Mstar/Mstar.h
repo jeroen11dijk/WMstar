@@ -31,7 +31,7 @@ public:
 
 	Mstar(std::vector<std::vector<int>>& grid, std::vector<std::pair<int, int>>& v_I_a, std::vector<std::vector<std::pair<int, int>>>& v_W_a, std::vector<std::pair<int, int>>& v_F_a, const bool &unordered);
     void update_policies_distances_targets();
-	std::pair<std::vector<std::vector<std::pair<int, int>>>, int> solve();
+    std::vector<std::vector<std::pair<int, int>>> solve();
 	int get_edge_weight(std::vector<Coordinate> &prev_coordinates, Config_key & key, std::vector<int> &waiting);
 	void backprop(Config_key &key, Config_value &value, std::unordered_set<int> &collisions);
 	std::vector<std::vector<Coordinate>> get_limited_neighbours(Config_key &v_k, std::unordered_set<int> &collisions);

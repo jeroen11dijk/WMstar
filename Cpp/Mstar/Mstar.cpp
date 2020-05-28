@@ -63,10 +63,9 @@ void Mstar::update_policies_distances_targets() {
     }
 }
 
-std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
+std::vector<std::vector<std::pair<int, int>>> Mstar::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
-        std::cout << v_k << std::endl;
         Config_value &v_k_config = configurations[v_k];
         open.pop();
         if (v_k.coordinates == v_F) {
@@ -87,7 +86,8 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
                     }
                     res.push_back(res_i);
                 }
-                return make_pair(res, v_k_config.cost + float(n_agents));
+                std::cout << "Finished!" << std::endl;
+                return res;
             }
         }
         for (std::vector<Coordinate> &v_l : get_limited_neighbours(v_k, v_k_config.collisions)) {
