@@ -157,3 +157,14 @@ def disjoint(set_list):
         else:
             result.append(s)
     return result
+
+
+def isSubset(config, collisions):
+    for collision_set in collisions:
+        if len(config.collisions) == 0:
+            return False
+        for config_collision_set in config.collisions:
+            if collision_set.issubset(config_collision_set):
+                break
+            return False
+    return True
