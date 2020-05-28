@@ -19,16 +19,21 @@ x_axis = sorted(get_all_benchmarks(without=[54, 58]))
 
 zipper = zip(Mstar_cost, Mstar_inflated_cost, CBS_cost, MLA_cost, Astar_cost, BCP_cost)
 data = []
+remove = []
 for i in range(len(y_axis)):
     data.append([])
-for benchmark in zipper:
+for i, benchmark in enumerate(zipper):
     optimal = np.nanmin(benchmark)
-    for i in range(len(benchmark)):
-        if (benchmark[i] - optimal) == 0:
-            data[i].append(1)
-        else:
-            data[i].append(1 + (benchmark[i] - optimal))
-
+    if all(val == optimal or np.isnan(val) for val in benchmark):
+        remove.append(i)
+    else:
+        for i in range(len(benchmark)):
+            if (benchmark[i] - optimal) == 0:
+                data[i].append(1)
+            else:
+                data[i].append(1 + (benchmark[i] - optimal))
+for index in reversed(remove):
+    x_axis.pop(index)
 
 plt.figure(figsize=(len(get_all_benchmarks()), 5))
 ax = sns.heatmap(data, xticklabels=x_axis, yticklabels=y_axis, norm=LogNorm(), cmap="magma_r", annot=True, linewidth=0.5)
