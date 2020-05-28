@@ -1,10 +1,31 @@
 import heapq
 import itertools
+import math
+from collections import namedtuple
+from copy import copy
+from dataclasses import dataclass, field
+from typing import List, Set
 
 from Cpp.Mstar_pybind import python_phi
 
-from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic
+from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic, disjoint
+
+Config_key = namedtuple('Config_key', 'coordinates target_indices')
+
+
+@dataclass
+class Config_value:
+    back_ptr: List[any] = field(default_factory=list)
+    back_set: Set[any] = field(default_factory=set)
+    collisions: List[any] = field(default_factory=list)
+    cost: int = math.inf
+    waiting: List[any] = field(default_factory=list)
+
+    def __str__(self):
+        return str([self.cost, self.collisions, self.back_set, self.back_ptr])
+
+    def __repr__(self):
+        return str([self.cost, self.collisions, self.back_set, self.back_ptr])
 
 
 class Mstar:
@@ -14,6 +35,9 @@ class Mstar:
         self.v_I = v_I
         self.v_W = v_W
         self.v_F = v_F
+        self.policies = []
+        self.distances = []
+        self.targets = []
         self.inflated = inflated
         self.update_policies_distances_targets(graph)
         self.v_W = []
@@ -36,6 +60,7 @@ class Mstar:
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
             current_config = configurations[current]
+            print(current)
             if current.coordinates == self.v_F and all(
                     current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
@@ -56,9 +81,11 @@ class Mstar:
                     neighbour_config = Config_value(waiting=self.n_agents * [0])
                 else:
                     neighbour_config = configurations[neighbour]
-                neighbour_config.collisions.update(neighbour_collisions)
                 neighbour_config.back_set.add(current)
-                self.backprop(current, current_config, neighbour_config.collisions)
+                if len(neighbour_collisions) > 0 and neighbour_collisions not in neighbour_config.collisions:
+                    neighbour_config.collisions.append(neighbour_collisions)
+                    neighbour_config.collisions = disjoint(neighbour_config.collisions)
+                    self.backprop(current, current_config, neighbour_config.collisions)
                 f = self.get_edge_weight(current.coordinates, neighbour, current_config.waiting)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
@@ -103,7 +130,7 @@ class Mstar:
         for i in range(self.n_agents):
             coordinates_i = key.coordinates[i]
             options_i = []
-            if i in collisions:
+            if any(i in collision_set for collision_set in collisions):
                 # ADD all the neighbours
                 target_index = key.target_indices[i]
                 policy = self.policies[i][target_index]
@@ -132,8 +159,10 @@ class Mstar:
         return neighbours
 
     def backprop(self, key, config, collisions):
-        if not collisions.issubset(config.collisions):
-            config.collisions.update(collisions)
+        original = copy(config.collisions)
+        config.collisions.extend(collisions)
+        config.collisions = disjoint(config.collisions)
+        if original != config.collisions:
             # Technically we should check whether its not already in open
             # But that takes too much time and it will settle it self
             # if not any(v_k in configuration for configuration in open):

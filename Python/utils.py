@@ -143,16 +143,17 @@ def held_karp(dists):
     return list(reversed(path))
 
 
-def phi(v_l, v_k):
-    seen = set()
-    double = []
-    edges = {}
-    for i in range(len(v_k)):
-        edges[v_k[i]] = v_l[i]
-    for i, val in enumerate(v_l):
-        if val in seen or val != v_k[i] and val in edges and edges[val] == v_k[i]:
-            double.append(val)
+def disjoint(set_list):
+    result = []
+    for s in set_list:
+        for elem in s:
+            for output_set in result:
+                if elem in output_set:
+                    output_set.update(s)
+                    break
+            else:
+                continue
+            break
         else:
-            seen.add(val)
-    double = set(double)
-    return [i for i, val in enumerate(v_l) if val in double]
+            result.append(s)
+    return result
