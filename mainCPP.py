@@ -12,6 +12,6 @@ def solve(problem):
 benchmarks = [31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", benchmarks, "M*", "CPP inflated", True, solver=solve,
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 13, "M*", "CPP inflated", True, solver=solve,
                                    cores=-1, timeout=60000)
     benchmarker.run()
