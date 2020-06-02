@@ -2,6 +2,7 @@ import heapq
 import itertools
 import math
 from collections import namedtuple
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Set
 
@@ -63,7 +64,7 @@ class Mstar:
                 for i in range(self.n_agents):
                     res.append([list(config[i]) for config in current_config.back_ptr])
                 return res, current_config.cost + self.n_agents
-            neighbours = self.get_limited_neighbours(current, current_config.collisions)
+            neighbours = self.get_limited_neighbours_OD(current, current_config.collisions)
             for neighbour_coordinates in neighbours:
                 neighbour_target_indices = list(current.target_indices)
                 for i in range(self.n_agents):
@@ -150,6 +151,51 @@ class Mstar:
         for element in itertools.product(*options):
             neighbours.append(element)
         return neighbours
+
+    def get_limited_neighbours_OD(self, key, collisions):
+        neighbours = [list(key.coordinates)]
+        for i in range(self.n_agents):
+            coordinates_i = key.coordinates[i]
+            if i in collisions:
+                # ADD all the neighbours
+                target_index = key.target_indices[i]
+                policy = self.policies[i][target_index]
+                successors = policy[key.coordinates[i]]
+                possibilities = [deepcopy(neighbours)]
+                if len(successors) > 1:
+                    for index, successor in enumerate(successors):
+                        copies = deepcopy(neighbours)
+                        for neighbour in copies:
+                            neighbour[i] = successor
+                        possibilities.append(copies)
+                else:
+                    for index, nbr in enumerate(self.graph[coordinates_i]):
+                        copies = deepcopy(neighbours)
+                        for good_name in copies:
+                            good_name[i] = nbr
+                        possibilities.append(copies)
+                best_moves = []
+                min_cost = math.inf
+                for configurations in possibilities:
+                    for configuration in configurations:
+                        config_cost = self.heuristic_configuration(Config_key(configuration, key.target_indices))
+                        if config_cost < min_cost:
+                            best_moves = [configuration]
+                            min_cost = config_cost
+                        elif config_cost == min_cost:
+                            best_moves.append(configuration)
+                neighbours = best_moves
+            else:
+                target_index = key.target_indices[i]
+                policy = self.policies[i][target_index]
+                successors = policy[key.coordinates[i]]
+                if len(successors) == 0:
+                    for neighbour in neighbours:
+                        neighbour[i] = coordinates_i
+                else:
+                    for neighbour in neighbours:
+                        neighbour[i] = successors[0]
+        return [tuple(neighbour) for neighbour in neighbours]
 
     def backprop(self, key, config, collisions):
         if not collisions.issubset(config.collisions):
