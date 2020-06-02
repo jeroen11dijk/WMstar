@@ -18,8 +18,8 @@ MLA_cost = [36, 49, 87, np.nan, 131, 27, 347, 1149, 2264, 2624, 102, 121, 63, 36
 BCP_cost = [36, 48, 75, 26, 199, 27, np.nan, np.nan, np.nan, 1590, 100, 115, 52, np.nan, 70, 70, 53, 51, np.nan, 43,
             252, 114, 138, 1994, 114, 169, 333, 28, 39, 824, 65, 1331, np.nan, np.nan, np.nan]
 
-y_axis = ["M*", "M* inflated", "CBS", "MLA*", "A*+OD+ID", "BCP"]
-x_axis = sorted(get_all_benchmarks(without=[54, 58]))
+y_axis = ["WM*", "inflated WM*", "CBS", "MLA*", "A*+OD+ID", "BCP"]
+x_axis = sorted(get_all_benchmarks(without=[54, 58, 77]))
 
 zipper = zip(Mstar_cost, Mstar_inflated_cost, CBS_cost, MLA_cost, Astar_cost, BCP_cost)
 data = []
@@ -39,7 +39,8 @@ for i, benchmark in enumerate(zipper):
 for index in reversed(remove):
     x_axis.pop(index)
 
-plt.figure(figsize=(len(get_all_benchmarks()), 5))
+sns.set(font_scale=2)
+plt.figure(figsize=(2*len(x_axis), 1.5*len(y_axis)))
 ax = sns.heatmap(data, xticklabels=x_axis, yticklabels=y_axis, norm=LogNorm(), cmap="magma_r", annot=True,
                  linewidth=0.5)
 plt.show()
