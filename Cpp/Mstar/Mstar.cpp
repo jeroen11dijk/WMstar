@@ -6,6 +6,7 @@
 Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int>> &v_I_a,
              std::vector<std::vector<std::pair<int, int>>> &v_W_a,
              std::vector<std::pair<int, int>> &v_F_a, const bool &inflated) {
+    time.start();
     n_agents = v_I_a.size();
     this->inflated = inflated;
     graph = create_graph(grid);
@@ -62,6 +63,19 @@ void Mstar::update_policies_distances_targets() {
 
 std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
     while (!open.empty()) {
+        time.stop();
+        total_time += time.elapsed();
+        std::cout << total_time << std::endl;
+        if (total_time > 20) {
+            std::vector<std::vector<std::pair<int, int>>> res;
+            for (int i = 0; i != n_agents; i++) {
+                std::vector<std::pair<int, int>> res_i;
+                res_i.emplace_back(v_I[i].a, v_I[i].b);
+                res.push_back(res_i);
+            }
+            return std::make_pair(res, 0);
+        }
+        time.start();
         Config_key v_k = open.top().config_key;
         Config_value &v_k_config = configurations[v_k];
         open.pop();
@@ -124,7 +138,13 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
             }
         }
     }
-    std::cout << "No path exists, or I am an idiot";
+    std::vector<std::vector<std::pair<int, int>>> res;
+    for (int i = 0; i != n_agents; i++) {
+        std::vector<std::pair<int, int>> res_i;
+        res_i.emplace_back(v_I[i].a, v_I[i].b);
+        res.push_back(res_i);
+    }
+    return std::make_pair(res, 0);
 }
 
 int Mstar::get_edge_weight(std::vector<Coordinate> &prev_coordinates, Config_key &key, std::vector<int> &waiting) {

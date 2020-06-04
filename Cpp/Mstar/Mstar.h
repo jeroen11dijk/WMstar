@@ -20,6 +20,8 @@ class Mstar {
 public:
 	int n_agents;
 	bool inflated;
+	timer time = timer();
+	float total_time = 0.0f;
 	std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash> graph;
 	std::vector<Coordinate> v_I, v_F;
 	std::vector<std::vector<Coordinate>> v_W;
