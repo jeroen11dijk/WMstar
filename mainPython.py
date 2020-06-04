@@ -1,22 +1,22 @@
-from copy import copy
-
 from mapfw import MapfwBenchmarker
-
+from Python.test_python_benchmarks import setup_benchmark
+from Python.mstar import Mstar
 
 def solve(problem):
     from Python.test_python_benchmarks import setup_benchmark
     from Python.mstar import Mstar
     graph, v_I, v_W, v_F = setup_benchmark(problem)
-    return Mstar(graph, v_I, v_W, v_F, True).solve()[0]
+    return Mstar(graph, v_I, v_W, v_F, False).solve()[0]
 
 
 # if __name__ == '__main__':
-#     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M*", "Python TSP dynamic", True, solver=solve,
+#     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 2, "M*", "Python inflated", True, solver=solve,
 #                                    cores=-1, timeout=60000)
 #     benchmarker.run()
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 2, "M*", "Python OD", True, solver=solve, cores=-1)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M*", "Python tsp dynamic", True, solver=solve, cores=-1)
 for problem in benchmarker:
-    res = solve(problem)
+    graph, v_I, v_W, v_F = setup_benchmark(problem)
+    res = Mstar(graph, v_I, v_W, v_F, False).solve()[0]
     print(res)
-    # problem.add_solution(res)
+    problem.add_solution(res)

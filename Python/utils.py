@@ -32,48 +32,23 @@ def dijkstra_predecessor_and_distance(G, source):
     return pred, dist
 
 
-def tsp_greedy(start, end, waypoints, distances):
-    graph = {}
-    graph[start] = [(distances[i][start], waypoints[i]) for i in range(len(waypoints))] + [(distances[-1][start], end),
-                                                                                           (0, (-1, -1))]
-    graph[start].sort()
-    graph[end] = [(distances[i][end], waypoints[i]) for i in range(len(waypoints))] + [(distances[-1][start], start),
-                                                                                       (0, (-1, -1))]
-    graph[end].sort()
-    graph[(-1, -1)] = [(0, start), (0, end)]
-    for index, waypoint in enumerate(waypoints):
-        graph[waypoint] = [(distances[i][waypoint], waypoints[i]) for i in range(len(waypoints))] + [
-            (distances[index][start], start), (distances[-1][waypoint], end)]
-        graph[waypoint].sort()
-    # Greedy
-    n_nodes = len(waypoints) + 3
-    visited = []
-    visited.append(end)
-    current = end
-    print(graph[start])
-    while len(visited) < n_nodes:
-        index = 0
-        while graph[current][index][1] in visited:
-            if start == end == graph[current][index][1] and visited.count(start) < 2:
-                break
-            index += 1
-        next = graph[current][index][1]
-        visited.append(next)
-        current = next
-    return visited[3:]
-
-
 def tsp_dynamic(start, end, waypoints, distances):
     matrix = []
-    nodes = [start, (-1, -1), end] + waypoints
-    matrix.append([0, 0, distances[-1][start]] + [distances[i][start] for i in range(len(waypoints))])
-    matrix.append([0, 0, 0] + len(waypoints) * [math.inf])
-    matrix.append([distances[-1][start], 0, 0] + [distances[i][end] for i in range(len(waypoints))])
-    for index, waypoint in enumerate(waypoints):
-        matrix.append([distances[index][start], math.inf, distances[-1][waypoint]] + [distances[i][waypoint] for i in
-                                                                                      range(len(waypoints))])
-    indices = held_karp(matrix)
+    dummy = (-1, -1)
+    nodes = [start, dummy, end] + waypoints
+    matrix.append([0, 0, distances[end][start]])
+    matrix.append([0, 0, 0])
+    matrix.append([distances[end][start], 0, 0])
+    for i, waypoint in enumerate(waypoints):
+        matrix[0].append(distances[waypoint][start])
+        matrix[1].append(float("inf"))
+        matrix[2].append(distances[waypoint][end])
+        current_row = [distances[waypoint][start], float("inf"), distances[waypoint][end]]
+        for other in waypoints:
+            current_row.append(distances[waypoint][other])
+        matrix.append(current_row)
     best_path = []
+    indices = held_karp(matrix)
     for index in indices:
         best_path.append(nodes[index])
     return best_path[1:-2]
