@@ -78,68 +78,22 @@ dijkstra_predecessor_and_distance(std::unordered_map<Coordinate, std::vector<Coo
     return make_pair(pred, distances);
 }
 
-bool sort_pair(const std::pair<int, Coordinate> &a, std::pair<int, Coordinate> &b) {
-    return a.first < b.first;
-}
-
-std::vector<Coordinate> tsp_greedy(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
-                                   std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances) {
-    std::unordered_map<Coordinate, std::vector<std::pair<int, Coordinate>>, coordinate_hash> graph;
-    Coordinate dummy = Coordinate(-1, -1);
-    graph[start] = {std::make_pair(distances.back()[start], end), std::make_pair(0, dummy)};
-    graph[end] = {std::make_pair(distances.back()[start], start), std::make_pair(0, dummy)};
-    graph[dummy] = {std::make_pair(0, start), std::make_pair(0, end)};
-    for (int i = 0; i != waypoints.size(); i++) {
-        Coordinate current = waypoints[i];
-        graph[current] = {};
-        for (Coordinate other : waypoints) {
-            graph[current].emplace_back(std::make_pair(distances[i][other], other));
-        }
-        graph[current].emplace_back(std::make_pair(distances[i][start], start));
-        graph[current].emplace_back(std::make_pair(distances[i][end], end));
-        std::sort(graph[current].begin(), graph[current].end(), sort_pair);
-        // Add this way point to start and end
-        graph[start].emplace_back(std::make_pair(distances[i][start], current));
-        graph[end].emplace_back(std::make_pair(distances[i][end], current));
-    }
-    std::sort(graph[start].begin(), graph[start].end(), sort_pair);
-    std::sort(graph[end].begin(), graph[end].end(), sort_pair);
-    int n_nodes = waypoints.size() + 3;
-    std::vector<Coordinate> visited = {end};
-    Coordinate current = end;
-    while (visited.size() < n_nodes) {
-        int index = 0;
-        while (std::count(visited.begin(), visited.end(), graph[current][index].second)) {
-            if (start == end && start == graph[current][index].second &&
-                std::count(visited.begin(), visited.end(), start) < 2) {
-                break;
-            }
-            index++;
-        }
-        Coordinate next = graph[current][index].second;
-        visited.emplace_back(next);
-        current = next;
-    }
-    visited.erase(visited.begin(), visited.begin() + 3);
-    return visited;
-}
-
 std::vector<Coordinate> tsp_dynamic(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
-                                    std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances) {
+                                    std::unordered_map<Coordinate, std::unordered_map<Coordinate, int, coordinate_hash>, coordinate_hash> &distances) {
     std::vector<std::vector<int>> matrix;
     Coordinate dummy = Coordinate(-1, -1);
     std::vector<Coordinate> nodes = {start, dummy, end};
     nodes.insert(nodes.end(), waypoints.begin(), waypoints.end());
-    matrix.push_back({0, 0, distances.back()[start]});
+    matrix.push_back({0, 0, distances[end][start]});
     matrix.push_back({0, 0, 0});
-    matrix.push_back({distances.back()[start], 0, 0});
-    for (int i = 0; i != waypoints.size(); i++) {
-        matrix[0].push_back(distances[i][start]);
+    matrix.push_back({distances[end][start], 0, 0});
+    for (Coordinate waypoint : waypoints) {
+        matrix[0].push_back(distances[waypoint][start]);
         matrix[1].push_back(INT_MAX);
-        matrix[2].push_back(distances[i][end]);
-        std::vector<int> current_row = {distances[i][start], INT_MAX, distances[i][end]};
+        matrix[2].push_back(distances[waypoint][end]);
+        std::vector<int> current_row = {distances[waypoint][start], INT_MAX, distances[waypoint][end]};
         for (Coordinate other : waypoints) {
-            current_row.push_back(distances[i][other]);
+            current_row.push_back(distances[waypoint][other]);
         }
         matrix.push_back(current_row);
     }

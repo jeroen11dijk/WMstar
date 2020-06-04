@@ -11,7 +11,7 @@ min_cost = {1: 36, 2: 48, 3: 75, 4: 26, 5: 119, 6: 27, 7: 205, 8: 821, 9: 1747, 
 
 
 def cpp_test(G, v_I, v_W, v_F, min_cost):
-    res = Mstar(G, v_I, v_W, v_F, True).solve()
+    res = Mstar(G, v_I, v_W, v_F, False).solve()
     if res[1] < min_cost:
         print(res[1])
     assert res[1] < min_cost or math.isclose(res[1], min_cost)

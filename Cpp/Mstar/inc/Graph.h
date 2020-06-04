@@ -17,11 +17,8 @@ std::pair<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_has
 dijkstra_predecessor_and_distance(std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash> &graph,
                                   Coordinate source);
 
-std::vector<Coordinate> tsp_greedy(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
-                                   std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances);
-
 std::vector<Coordinate> tsp_dynamic(Coordinate &start, Coordinate &end, std::vector<Coordinate> &waypoints,
-                                    std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> &distances);
+                                    std::unordered_map<Coordinate, std::unordered_map<Coordinate, int, coordinate_hash>, coordinate_hash> &distances);
 
 std::vector<int> held_karp(std::vector<std::vector<int>> matrix);
 

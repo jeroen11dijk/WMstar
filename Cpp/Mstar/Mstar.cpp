@@ -27,8 +27,10 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
     update_policies_distances_targets();
     for (int i = 0; i != n_agents; i++) {
         v_W[i] = tsp_dynamic(v_I[i], v_F[i], v_W[i], distances[i]);
+        std::vector<Coordinate> targets_i = v_W[i];
+        targets_i.push_back(v_F[i]);
+        targets.push_back(targets_i);
     }
-    update_policies_distances_targets();
     Config_key v_I_key = Config_key(v_I, std::vector<int>(n_agents, 0));
     configurations[v_I_key] = Config_value(std::vector<int>(n_agents, 0));
     configurations[v_I_key].cost = 0;
@@ -38,32 +40,27 @@ Mstar::Mstar(std::vector<std::vector<int>> &grid, std::vector<std::pair<int, int
 void Mstar::update_policies_distances_targets() {
     policies = {};
     distances = {};
-    targets = {};
     for (int i = 0; i != n_agents; i++) {
-        std::vector<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash>> policy_i;
-        std::vector<std::unordered_map<Coordinate, int, coordinate_hash>> distance_i;
-        std::vector<Coordinate> targets_i;
+        std::unordered_map<Coordinate, std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash>, coordinate_hash> policy_i;
+        std::unordered_map<Coordinate, std::unordered_map<Coordinate, int, coordinate_hash>, coordinate_hash> distance_i;
         for (Coordinate const &waypoint : v_W[i]) {
             if (graph.count(waypoint)) {
                 std::pair<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash>, std::unordered_map<Coordinate, int, coordinate_hash>> dijkstra = dijkstra_predecessor_and_distance(
                         graph, waypoint);
-                policy_i.push_back(dijkstra.first);
-                distance_i.push_back(dijkstra.second);
-                targets_i.push_back(waypoint);
+                policy_i[waypoint] = dijkstra.first;
+                distance_i[waypoint] = dijkstra.second;
             }
         }
         std::pair<std::unordered_map<Coordinate, std::vector<Coordinate>, coordinate_hash>, std::unordered_map<Coordinate, int, coordinate_hash>> dijkstra = dijkstra_predecessor_and_distance(
                 graph, v_F[i]);
-        policy_i.push_back(dijkstra.first);
-        distance_i.push_back(dijkstra.second);
-        targets_i.push_back(v_F[i]);
+        policy_i[v_F[i]] = dijkstra.first;
+        distance_i[v_F[i]] = dijkstra.second;
         policies.push_back(policy_i);
         distances.push_back(distance_i);
-        targets.push_back(targets_i);
     }
 }
 
-std::vector<std::vector<std::pair<int, int>>> Mstar::solve() {
+std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
     while (!open.empty()) {
         Config_key v_k = open.top().config_key;
         Config_value &v_k_config = configurations[v_k];
@@ -86,8 +83,7 @@ std::vector<std::vector<std::pair<int, int>>> Mstar::solve() {
                     }
                     res.push_back(res_i);
                 }
-                std::cout << "Finished!" << std::endl;
-                return res;
+                return std::make_pair(res, v_k_config.cost + float(n_agents));
             }
         }
         for (std::vector<Coordinate> &v_l : get_limited_neighbours(v_k, v_k_config.collisions)) {
@@ -169,7 +165,8 @@ std::vector<std::vector<Coordinate>> Mstar::get_limited_neighbours(Config_key &v
             // Add all the neighbours
             options_i.push_back(source);
             int target_index = v_k.targets[i];
-            std::vector<Coordinate> successors = policies[i][target_index][source];
+            Coordinate target = targets[i][target_index];
+            std::vector<Coordinate> successors = policies[i][target][source];
             if (successors.size() > 1) {
                 for (auto &successor : successors) {
                     options_i.push_back(successor);
@@ -181,7 +178,8 @@ std::vector<std::vector<Coordinate>> Mstar::get_limited_neighbours(Config_key &v
             }
         } else {
             int target_index = v_k.targets[i];
-            std::vector<Coordinate> successors = policies[i][target_index][source];
+            Coordinate target = targets[i][target_index];
+            std::vector<Coordinate> successors = policies[i][target][source];
             if (successors.empty()) {
                 options_i.push_back(source);
             } else {
@@ -204,10 +202,10 @@ float Mstar::heuristic_configuration(Config_key &v_k) {
     for (int i = 0; i != n_agents; i++) {
         int target_index = v_k.targets[i];
         std::vector<Coordinate> targets_i = targets[i];
-        cost += distances[i][target_index][v_k.coordinates[i]];
+        cost += distances[i][targets_i[target_index]][v_k.coordinates[i]];
         target_index++;
         while (target_index < targets_i.size()) {
-            cost += distances[i][target_index][targets_i[target_index - 1]];
+            cost += distances[i][targets_i[target_index]][targets_i[target_index - 1]];
             target_index++;
         }
     }
