@@ -31,6 +31,7 @@ class Mstar:
         configurations = self.configurations
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
+            print(current.coordinates, [len(waypoints) for waypoints in current.visited_waypoints])
             current_config = configurations[current]
             if current.coordinates == self.v_F and all(
                     len(current.visited_waypoints[i]) == len(self.v_W[i]) for i in range(self.n_agents)):

@@ -14,7 +14,7 @@ def solve(problem):
 #                                    cores=-1)
 #     benchmarker.run()
 
-benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 22, "M*", "Python optimal?", True, solver=solve, cores=-1)
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 5, "M*", "Python optimal?", True, solver=solve, cores=-1)
 for problem in benchmarker:
     graph, v_I, v_W, v_F = setup_benchmark(problem)
     res = Mstar(graph, v_I, v_W, v_F, False).solve()[0]
