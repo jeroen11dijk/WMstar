@@ -3,8 +3,8 @@ import itertools
 
 from Cpp.Mstar_pybind import python_phi
 
-from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, dynamic_tsp
+from Python.classes import Config_value, Config_key
+from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic
 
 
 class Mstar:
