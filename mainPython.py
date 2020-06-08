@@ -1,5 +1,6 @@
 from mapfw import MapfwBenchmarker
-
+from Python.test_python_benchmarks import setup_benchmark
+from Python.mstar import Mstar
 
 def solve(problem):
     from Python.test_python_benchmarks import setup_benchmark
@@ -8,7 +9,14 @@ def solve(problem):
     return Mstar(graph, v_I, v_W, v_F, False).solve()[0]
 
 
-if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 7, "M*", "Python", True, solver=solve,
-                                   cores=-1)
-    benchmarker.run()
+# if __name__ == '__main__':
+#     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M*", "Python optimal?", True, solver=solve,
+#                                    cores=-1)
+#     benchmarker.run()
+
+benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 22, "M*", "Python optimal?", True, solver=solve, cores=-1)
+for problem in benchmarker:
+    graph, v_I, v_W, v_F = setup_benchmark(problem)
+    res = Mstar(graph, v_I, v_W, v_F, False).solve()[0]
+    problem.add_solution(res)
+    print(res)

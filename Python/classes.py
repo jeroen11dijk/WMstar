@@ -3,7 +3,7 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from typing import List, Set
 
-Config_key = namedtuple('Config_key', 'coordinates target_indices')
+Config_key = namedtuple('Config_key', 'coordinates visited_waypoints')
 
 
 @dataclass

@@ -122,7 +122,7 @@ def held_karp(dists):
 shared_cache = dict()
 
 
-def dynamic_tsp(waypoints, distances, target) -> Dict[Tuple[int, int], int]:
+def dynamic_tsp(waypoints, target, distances) -> Dict[Tuple[int, int], int]:
     """
     Calculates the minimal path from each way points to the goal, via all
     the other waypoints.
