@@ -54,7 +54,12 @@ class Mstar:
                 self.targets.append([self.v_F[i]])
         self.configurations = {}
         self.open = []
-        v_I_key = Config_key(v_I, (0,) * self.n_agents)
+        v_I_target_indices = [0] * self.n_agents
+        for i in range(self.n_agents):
+            if v_I[i] == self.targets[i][0] and \
+                    v_I_target_indices[i] < len(self.targets[i]) - 1:
+                v_I_target_indices[i] += 1
+        v_I_key = Config_key(v_I, tuple(v_I_target_indices))
         self.configurations[v_I_key] = Config_value(cost=0, waiting=self.n_agents * [0])
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
@@ -75,7 +80,7 @@ class Mstar:
                 neighbour_target_indices = list(current.target_indices)
                 for i in range(self.n_agents):
                     if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
-                            neighbour_coordinates[i] != self.v_F[i]:
+                            neighbour_target_indices[i] < len(self.targets[i]) - 1:
                         neighbour_target_indices[i] += 1
                 neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
                 neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)

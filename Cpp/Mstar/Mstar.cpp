@@ -65,7 +65,6 @@ std::pair<std::vector<std::vector<std::pair<int, int>>>, int> Mstar::solve() {
     while (!open.empty()) {
         time.stop();
         total_time += time.elapsed();
-        std::cout << total_time << std::endl;
         if (total_time > 20) {
             std::vector<std::vector<std::pair<int, int>>> res;
             for (int i = 0; i != n_agents; i++) {

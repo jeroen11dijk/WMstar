@@ -10,5 +10,5 @@ def solve(problem):
 
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 69, "M* Inflated", "CPP TSP Dynamic", True, solver=solve, cores=-1)
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [67, 68, 69], "M* Inflated", "CPP TSP Dynamic", False, solver=solve, cores=1)
     benchmarker.run()
