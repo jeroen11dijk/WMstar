@@ -7,7 +7,7 @@ from typing import List, Set
 
 from Cpp.Mstar_pybind import python_phi
 
-from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic, dynamic_tsp
+from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic, dynamic_tsp, shared_cache
 
 Config_key = namedtuple('Config_key', 'coordinates target_indices')
 

@@ -1,5 +1,4 @@
 import itertools
-import math
 from heapq import heappush, heappop
 from queue import Queue
 from typing import Dict, Tuple
@@ -120,34 +119,6 @@ def held_karp(dists):
     return list(reversed(path))
 
 
-def disjoint(set_list):
-    result = []
-    for s in set_list:
-        for elem in s:
-            for output_set in result:
-                if elem in output_set:
-                    output_set.update(s)
-                    break
-            else:
-                continue
-            break
-        else:
-            result.append(s)
-    return result
-
-
-def isSubset(config, collisions):
-    for collision_set in collisions:
-        if len(config.collisions) == 0:
-            return False
-        for config_collision_set in config.collisions:
-            if collision_set.issubset(config_collision_set):
-                break
-            return False
-    return True
-
-
-cache = dict()
 shared_cache = dict()
 
 
