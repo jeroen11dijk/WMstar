@@ -3,7 +3,7 @@ import itertools
 
 from Cpp.Mstar_pybind import python_phi
 
-from Python.classes import Config_value, Config_key
+from Python.classes import Config_key, Config_value
 from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic
 
 
@@ -19,10 +19,27 @@ class Mstar:
         self.targets = []
         self.inflated = inflated
         self.update_policies_distances_targets(graph)
-        self.configurations = dict()
+        self.v_W = []
+        for i in range(self.n_agents):
+            start = v_I[i]
+            end = v_F[i]
+            if len(v_W[i]) > 1:
+                self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
+                self.targets.append(self.v_W[i] + [self.v_F[i]])
+            elif (len(v_W[i])) == 1:
+                self.v_W.append(v_W[i])
+                self.targets.append(self.v_W[i] + [self.v_F[i]])
+            else:
+                self.v_W.append(v_W[i])
+                self.targets.append([self.v_F[i]])
+        self.configurations = {}
         self.open = []
-        self.shared_cache = dict()
-        v_I_key = Config_key(coordinates=v_I, visited_waypoints=(frozenset(),) * self.n_agents)
+        v_I_target_indices = [0] * self.n_agents
+        for i in range(self.n_agents):
+            if v_I[i] == self.targets[i][0] and \
+                    v_I_target_indices[i] < len(self.targets[i]) - 1:
+                v_I_target_indices[i] += 1
+        v_I_key = Config_key(v_I, tuple(v_I_target_indices))
         self.configurations[v_I_key] = Config_value(cost=0, waiting=self.n_agents * [0])
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
@@ -30,10 +47,9 @@ class Mstar:
         configurations = self.configurations
         while len(self.open) > 0:
             current = heapq.heappop(self.open)[1]
-            print(current.coordinates, [len(waypoints) for waypoints in current.visited_waypoints])
             current_config = configurations[current]
             if current.coordinates == self.v_F and all(
-                    len(current.visited_waypoints[i]) == len(self.v_W[i]) for i in range(self.n_agents)):
+                    current.target_indices[i] + 1 == len(self.targets[i]) for i in range(self.n_agents)):
                 current_config.back_ptr.append(self.v_F)
                 res = []
                 for i in range(self.n_agents):
@@ -41,13 +57,12 @@ class Mstar:
                 return res, current_config.cost + self.n_agents
             neighbours = self.get_limited_neighbours(current, current_config.collisions)
             for neighbour_coordinates in neighbours:
-                neighbour_visited_waypoints = list(current.visited_waypoints)
+                neighbour_target_indices = list(current.target_indices)
                 for i in range(self.n_agents):
-                    if neighbour_coordinates[i] in self.v_W[i]:
-                        normalset = set(neighbour_visited_waypoints[i])
-                        normalset.add(neighbour_coordinates[i])
-                        neighbour_visited_waypoints[i] = frozenset(normalset)
-                neighbour = Config_key(neighbour_coordinates, tuple(neighbour_visited_waypoints))
+                    if neighbour_coordinates[i] == self.targets[i][neighbour_target_indices[i]] and \
+                            neighbour_target_indices[i] < len(self.targets[i]) - 1:
+                        neighbour_target_indices[i] += 1
+                neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
                 neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
                     neighbour_config = Config_value(waiting=self.n_agents * [0])
@@ -93,30 +108,28 @@ class Mstar:
         neighbours = []
         options = []
         for i in range(self.n_agents):
-            position = key.coordinates[i]
-            distances = self.distances[i]
-            policies = self.policies[i]
-            waypoints = self.v_W[i]
-            target = self.v_F[i]
+            coordinates_i = key.coordinates[i]
             options_i = []
-            if len(key.visited_waypoints[i]) != len(waypoints):
-                to_visit = self.v_W[i] - key.visited_waypoints[i]
-                path_lengths = dynamic_tsp(to_visit, target, distances)
-                waypoint = min(path_lengths.items(), key=lambda wp: path_lengths[wp[0]] + distances[wp[0]][position])[0]
-                successors = policies[waypoint][position]
-            else:
-                successors = policies[target][position]
             if i in collisions:
-                options_i.append(position)
+                # ADD all the neighbours
+                target_index = key.target_indices[i]
+                target = self.targets[i][target_index]
+                policy = self.policies[i][target]
+                successors = policy[key.coordinates[i]]
+                options_i.append(coordinates_i)
                 if len(successors) > 1:
                     for successor in successors:
                         options_i.append(successor)
                 else:
-                    for nbr in self.graph[position]:
+                    for nbr in self.graph[coordinates_i]:
                         options_i.append(nbr)
             else:
+                target_index = key.target_indices[i]
+                target = self.targets[i][target_index]
+                policy = self.policies[i][target]
+                successors = policy[key.coordinates[i]]
                 if len(successors) == 0:
-                    options_i.append(position)
+                    options_i.append(coordinates_i)
                 else:
                     options_i.append(successors[0])
             options.append(options_i)
@@ -141,10 +154,10 @@ class Mstar:
     def get_edge_weight(self, prev_coordinates, key, waiting):
         cost = 0
         for i in range(self.n_agents):
-            visited_waypoints = len(key.visited_waypoints[i]) == len(self.v_W[i])
+            visited_waypoints = key.target_indices[i] == len(self.targets[i]) - 1
             prev = prev_coordinates[i]
             current = key.coordinates[i]
-            target = self.v_F[i]
+            target = self.targets[i][-1]
             if prev == target and current != target and visited_waypoints:
                 cost += 1 + waiting[i]
             elif not (prev == current == target and visited_waypoints):
@@ -154,16 +167,13 @@ class Mstar:
     def heuristic_configuration(self, key):
         cost = 0
         for i in range(self.n_agents):
-            position = key.coordinates[i]
-            distances = self.distances[i]
-            target = self.v_F[i]
-            waypoints = self.v_W[i]
-            if len(key.visited_waypoints[i]) != len(waypoints):
-                to_visit = self.v_W[i] - key.visited_waypoints[i]
-                path_lengths = dynamic_tsp(to_visit, target, distances)
-                cost += min(path_lengths[wp] + distances[wp][position] for wp in to_visit)
-            else:
-                cost += distances[target][position]
+            target_index = key.target_indices[i]
+            targets = self.targets[i]
+            cost += self.distances[i][targets[target_index]][key.coordinates[i]]
+            target_index += 1
+            while target_index < len(targets):
+                cost += self.distances[i][targets[target_index]][targets[target_index - 1]]
+                target_index += 1
         if self.inflated:
             return 1.1 * cost
         else:

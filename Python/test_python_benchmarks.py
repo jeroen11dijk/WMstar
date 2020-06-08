@@ -48,12 +48,12 @@ def setup_benchmark(problem):
     v_W = []
     for agent_waypoints in problem.waypoints:
         if len(agent_waypoints) > 0:
-            v_W_i = set()
+            v_W_i = []
             for waypoint in agent_waypoints:
-                v_W_i.add(tuple(tuple(waypoint)))
+                v_W_i.append(tuple(tuple(waypoint)))
             v_W.append(v_W_i)
         else:
-            v_W.append(set())
+            v_W.append(())
     v_W = tuple(v_W)
     v_F = tuple(tuple(target) for target in problem.goals)
     return grap_new, v_I, v_W, v_F
