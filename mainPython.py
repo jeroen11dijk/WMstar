@@ -9,6 +9,6 @@ def solve(problem):
 
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [73, 74, 75], "M*", "Python", False, solver=solve,
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 7, "M*", "Python", True, solver=solve,
                                    cores=-1)
     benchmarker.run()

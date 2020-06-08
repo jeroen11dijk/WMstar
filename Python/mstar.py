@@ -7,7 +7,7 @@ from typing import List, Set
 
 from Cpp.Mstar_pybind import python_phi
 
-from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic
+from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic, dynamic_tsp
 
 Config_key = namedtuple('Config_key', 'coordinates target_indices')
 
@@ -40,6 +40,7 @@ class Mstar:
         self.inflated = inflated
         self.update_policies_distances_targets(graph)
         self.v_W = []
+        print(dynamic_tsp(v_W[0], self.distances[0], v_F[0]))
         for i in range(self.n_agents):
             start = v_I[i]
             end = v_F[i]
