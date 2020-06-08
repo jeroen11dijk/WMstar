@@ -1,6 +1,7 @@
 import itertools
-import math
 from heapq import heappush, heappop
+from queue import Queue
+from typing import Dict, Tuple
 
 
 def euclidian_distance(a, b):
@@ -118,28 +119,55 @@ def held_karp(dists):
     return list(reversed(path))
 
 
-def disjoint(set_list):
-    result = []
-    for s in set_list:
-        for elem in s:
-            for output_set in result:
-                if elem in output_set:
-                    output_set.update(s)
-                    break
+shared_cache = dict()
+
+
+def dynamic_tsp(waypoints, target, distances) -> Dict[Tuple[int, int], int]:
+    """
+    Calculates the minimal path from each way points to the goal, via all
+    the other waypoints.
+    """
+
+    cache_key = tuple(sorted(waypoints))
+    if cache_key in shared_cache:
+        return shared_cache[cache_key]
+
+    ordered_waypoints = list(waypoints)
+    n = len(ordered_waypoints)
+    all_indices = set(range(n))
+
+    memory = {}
+    queue = Queue()
+
+    for index, wp in enumerate(ordered_waypoints):
+        key = (index,), index
+        queue.put(key)
+        memory[key] = distances[target][wp], None
+
+    while not queue.empty():
+        prev_visited, prev_last_wp = queue.get()
+        prev_dist, _ = memory[(prev_visited, prev_last_wp)]
+        to_visit = all_indices.difference(set(prev_visited))
+
+        for new_last_point in to_visit:
+            new_visited = tuple(sorted(prev_visited + (new_last_point,)))
+            wpb = ordered_waypoints[new_last_point]
+            new_dist = prev_dist + distances[wpb][ordered_waypoints[prev_last_wp]]
+
+            new_key = new_visited, new_last_point
+            new_value = new_dist, prev_last_wp
+
+            if new_key not in memory:
+                memory[new_key] = new_value
+                queue.put(new_key)
             else:
-                continue
-            break
-        else:
-            result.append(s)
+                if new_dist < memory[new_key][0]:
+                    memory[new_key] = new_value
+
+    result = {}
+    full_path = tuple(range(n))
+    for index, wp in enumerate(ordered_waypoints):
+        result[wp] = memory[(full_path, index)][0]
+
+    shared_cache[cache_key] = result
     return result
-
-
-def isSubset(config, collisions):
-    for collision_set in collisions:
-        if len(config.collisions) == 0:
-            return False
-        for config_collision_set in config.collisions:
-            if collision_set.issubset(config_collision_set):
-                break
-            return False
-    return True
