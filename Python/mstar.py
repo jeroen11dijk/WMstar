@@ -1,7 +1,6 @@
 import heapq
 import itertools
-from queue import Queue
-from typing import Dict, Tuple
+
 from Cpp.Mstar_pybind import python_phi
 
 from Python.classes import Config_key, Config_value
@@ -23,7 +22,7 @@ class Mstar:
         self.configurations = dict()
         self.open = []
         self.shared_cache = dict()
-        v_I_key = Config_key(coordinates=v_I, visited_waypoints=(frozenset(), ) * self.n_agents)
+        v_I_key = Config_key(coordinates=v_I, visited_waypoints=(frozenset(),) * self.n_agents)
         self.configurations[v_I_key] = Config_value(cost=0, waiting=self.n_agents * [0])
         heapq.heappush(self.open, (self.heuristic_configuration(v_I_key), v_I_key))
 
