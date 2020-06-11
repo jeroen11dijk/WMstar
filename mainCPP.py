@@ -9,5 +9,5 @@ def solve(problem):
 
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 1, "M* Inflated", "CPP TSP Dynamic", False, solver=solve, cores=1)
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", 64, "M* Inflated", "CPP TSP Dynamic", False, solver=solve, cores=1)
     benchmarker.run()
