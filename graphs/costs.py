@@ -41,7 +41,7 @@ for index in reversed(remove):
     x_axis.pop(index)
 
 sns.set(font_scale=2)
-plt.figure(figsize=(2*len(x_axis), 1.5*len(y_axis)))
+plt.figure(figsize=(2 * len(x_axis), 1.5 * len(y_axis)))
 ax = sns.heatmap(data, xticklabels=x_axis, yticklabels=y_axis, norm=LogNorm(), cmap="magma_r", annot=True,
                  linewidth=0.5)
 plt.show()

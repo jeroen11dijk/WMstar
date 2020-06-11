@@ -1,6 +1,5 @@
 from mapfw import MapfwBenchmarker
 
-
 def solve(problem):
     from Cpp.Mstar_pybind import Mstar
     for i in range(len(problem.waypoints)):
@@ -10,5 +9,5 @@ def solve(problem):
 
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [67, 68, 69], "M* Inflated", "CPP TSP Dynamic", False, solver=solve, cores=1)
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [10, 19, 59, 61], "M* Inflated", "CPP TSP Dynamic", False, solver=solve, cores=1)
     benchmarker.run()
