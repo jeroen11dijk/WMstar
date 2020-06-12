@@ -1,5 +1,6 @@
 from mapfw import MapfwBenchmarker
 
+
 def solve(problem):
     from Python.test_python_benchmarks import setup_benchmark
     from Python.mstar import Mstar
