@@ -1,4 +1,4 @@
-from mapfw import MapfwBenchmarker, get_all_benchmarks
+from mapfw import MapfwBenchmarker
 
 def solve(problem):
     from Python.test_python_benchmarks import setup_benchmark
