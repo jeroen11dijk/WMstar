@@ -1,10 +1,8 @@
 import heapq
 import itertools
 
-from Cpp.Mstar_pybind import python_phi
-
 from Python.classes import Config_key, Config_value
-from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic
+from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic, phi
 
 
 class Mstar:
@@ -63,7 +61,7 @@ class Mstar:
                             neighbour_target_indices[i] < len(self.targets[i]) - 1:
                         neighbour_target_indices[i] += 1
                 neighbour = Config_key(neighbour_coordinates, tuple(neighbour_target_indices))
-                neighbour_collisions = python_phi(neighbour.coordinates, current.coordinates)
+                neighbour_in_collision, neighbour_collisions = phi(neighbour.coordinates, current.coordinates)
                 if neighbour not in configurations:
                     neighbour_config = Config_value(waiting=self.n_agents * [0])
                 else:
@@ -74,7 +72,7 @@ class Mstar:
                 f = self.get_edge_weight(current.coordinates, neighbour, current_config.waiting)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
-                if len(neighbour_collisions) == 0 and new_cost_v_l < old_cost_v_l:
+                if neighbour_in_collision and new_cost_v_l < old_cost_v_l:
                     neighbour_config.cost = current_config.cost + f
                     neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
                     for i in range(self.n_agents):

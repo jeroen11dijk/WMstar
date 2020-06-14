@@ -171,3 +171,16 @@ def dynamic_tsp(waypoints, target, distances) -> Dict[Tuple[int, int], int]:
 
     shared_cache[cache_key] = result
     return result
+
+
+def phi(v_l, v_k):
+    seen = set()
+    double = []
+    edges = {k: l for k, l in zip(v_k, v_l)}
+    for i, val in enumerate(v_l):
+        if val in seen or val != v_k[i] and val in edges and edges[val] == v_k[i]:
+            double.append(val)
+        else:
+            seen.add(val)
+    double = set(double)
+    return len(double) > 0, (i for i, val in enumerate(v_l) if val in double)
