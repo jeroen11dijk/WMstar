@@ -72,7 +72,7 @@ class Mstar:
                 f = self.get_edge_weight(current.coordinates, neighbour, current_config.waiting)
                 new_cost_v_l = current_config.cost + f
                 old_cost_v_l = neighbour_config.cost
-                if neighbour_in_collision and new_cost_v_l < old_cost_v_l:
+                if not neighbour_in_collision and new_cost_v_l < old_cost_v_l:
                     neighbour_config.cost = current_config.cost + f
                     neighbour_config.back_ptr = current_config.back_ptr + [current.coordinates]
                     for i in range(self.n_agents):
