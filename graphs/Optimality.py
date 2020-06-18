@@ -43,9 +43,9 @@ with open('CSV/inflated13.csv') as csvfile:
     for row in readCSV:
         inflated13.append(int(row[6]) / int(row[5]))
 
-print(sum(normal5) / len(normal5))
-print(sum(normal10) / len(normal10))
-print(sum(normal13) / len(normal13))
-print(sum(inflated5) / len(inflated5))
-print(sum(inflated10) / len(inflated10))
-print(sum(inflated13) / len(inflated13))
+print(max(normal5) * 100, sum(normal5) / len(normal5) * 100)
+print(max(normal10) * 100, sum(normal10) / len(normal10) * 100)
+print(max(normal13) * 100, sum(normal13) / len(normal13) * 100)
+print(max(inflated5) * 100, sum(inflated5) / len(inflated5) * 100)
+print(max(inflated10) * 100, sum(inflated10) / len(inflated10) * 100)
+print(max(inflated13) * 100, sum(inflated13) / len(inflated13) * 100)
