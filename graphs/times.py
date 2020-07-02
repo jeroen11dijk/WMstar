@@ -14,7 +14,7 @@ CBS_times = [1, 34, 7, 118, 1770, 11, 33, 118000, 171000, 33490, 12, 299, 31, 1,
 Astar_times = [3, 58, 11, 42, 27610, 17, 103, 90000, np.nan, np.nan, 25, 3590, 2040, 3, 77, 54, 112000, 18, np.nan, 210,
                7030, 88, 857, np.nan, 4280, 92, 11990, 13760, 516, np.nan, 1980, np.nan, 7, 6660, 154]
 MLA_times = [1, 1, 6, np.nan, 53, 1, 35, 134, 228, 385, 7, 12, 2, 1, 13, 17, 8, 3, 861, np.nan, 20, 23, 45, 244, 14, 9,
-             27, np.nan, np.nan, 104, np.nan, 246, np.nan, np.nan, np.nan]
+             27, np.nan, np.nan, 104, np.nan, 246, np.nan, 6, np.nan]
 BCP_times = [11, 172, 13, 45, 341, 28, np.nan, np.nan, np.nan, 30940, 17, 49, 30, np.nan, 30, 27, 385, 24, np.nan, 15,
              38, 9, 922, 1460, 494, 14, 2320, 8710, 67, 2549000, 247, 653000, 12, 599, 6930]
 
@@ -43,4 +43,5 @@ sns.set(font_scale=2)
 plt.figure(figsize=(2 * len(x_axis), 1.5 * len(y_axis)))
 ax = sns.heatmap(data, xticklabels=x_axis, yticklabels=y_axis, norm=LogNorm(), cmap="magma_r", annot=True,
                  linewidth=0.5)
-plt.show()
+plt.tight_layout()
+plt.savefig(fname="times")

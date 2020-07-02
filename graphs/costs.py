@@ -14,7 +14,7 @@ CBS_cost = [36, 48, 75, 26, 119, 27, 205, 821, 1733, 1590, 100, 115, 52, 34, 70,
 Astar_cost = [36, 48, 75, 26, 119, 27, 205, 821, np.nan, np.nan, 100, 115, 52, 34, 70, 70, 53, 51, np.nan, 43, 252, 114,
               138, np.nan, 114, 169, 333, 28, 39, np.nan, 65, np.nan, 14, 96, 94]
 MLA_cost = [36, 49, 87, np.nan, 135, 27, 347, 1149, 2264, 2624, 102, 121, 63, 36, 88, 98, 56, 56, 4410, np.nan, 533,
-            182, 286, 2023, 215, 173, 371, np.nan, np.nan, 1105, np.nan, 1570, np.nan, np.nan, np.nan]
+            182, 286, 2023, 215, 173, 371, np.nan, np.nan, 1105, np.nan, 1570, np.nan, 150, np.nan]
 BCP_cost = [36, 48, 75, 26, 119, 27, np.nan, np.nan, np.nan, 1590, 100, 115, 52, np.nan, 70, 70, 53, 51, np.nan, 43,
             252, 114, 138, 1994, 114, 169, 333, 28, 39, 824, 65, 1331, 14, 96, 94]
 
@@ -44,4 +44,5 @@ sns.set(font_scale=2)
 plt.figure(figsize=(2 * len(x_axis), 1.5 * len(y_axis)))
 ax = sns.heatmap(data, xticklabels=x_axis, yticklabels=y_axis, norm=LogNorm(), cmap="magma_r", annot=True,
                  linewidth=0.5)
-plt.show()
+plt.tight_layout()
+plt.savefig(fname="cost")
