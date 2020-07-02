@@ -6,7 +6,7 @@ from Python.utils import dijkstra_predecessor_and_distance, tsp_dynamic, phi
 
 
 class Mstar:
-    def __init__(self, graph, v_I, v_W, v_F, inflated=False):
+    def __init__(self, graph, v_I, v_W, v_F, ordered=False, inflated=False):
         self.n_agents = len(v_I)
         self.graph = graph
         self.v_I = v_I
@@ -22,7 +22,10 @@ class Mstar:
             start = v_I[i]
             end = v_F[i]
             if len(v_W[i]) > 1:
-                self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
+                if not ordered:
+                    self.v_W.append(tsp_dynamic(start, end, v_W[i], self.distances[i]))
+                else:
+                    self.v_W.append(v_W[i])
                 self.targets.append(self.v_W[i] + [self.v_F[i]])
             elif (len(v_W[i])) == 1:
                 self.v_W.append(v_W[i])
