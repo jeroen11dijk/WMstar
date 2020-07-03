@@ -10,6 +10,7 @@ class Mstar:
         self.n_agents: int = len(v_I)
         self.graph = graph
         self.v_I = v_I
+        self.v_W = v_W
         self.v_F = v_F
         self.policies = []
         self.distances = []
@@ -109,7 +110,7 @@ class Mstar:
         for i in range(self.n_agents):
             policy_i = {}
             distance_i = {}
-            # Add the predecessor and distance policy of the waypoinys
+            # Add the predecessor and distance policy of the waypoints
             for waypoint in self.v_W[i]:
                 if waypoint in graph:
                     predecessor, distance = dijkstra_predecessor_and_distance(graph, waypoint)
