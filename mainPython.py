@@ -10,6 +10,6 @@ def solve(problem):
 
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [64, 66], "WM*", "Python Ordered (TU)", False,
-                                   solver=solve, cores=1)
+    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [67, 68, 69], "WM*", "Python Ordered (TU)", False,
+                                   solver=solve, cores=10)
     benchmarker.run()
