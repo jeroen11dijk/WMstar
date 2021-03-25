@@ -16,7 +16,7 @@ class Mstar:
         self.distances = []
         self.targets = []
         self.inflated = inflated
-        self.update_policies_distances_targets(graph)
+        self.update_policies_distances_targets()
         self.v_W = []
         for i in range(self.n_agents):
             start = v_I[i]
@@ -103,7 +103,7 @@ class Mstar:
                     heapq.heappush(self.open, (neighbour_config.cost + heuristic, neighbour))
         return "No path exists, or I am an idiot"
 
-    def update_policies_distances_targets(self, graph):
+    def update_policies_distances_targets(self):
         self.policies = []
         self.distances = []
         # Loop over all agents and append to policies and distances so the index can be used to retrieve per agent
@@ -112,12 +112,12 @@ class Mstar:
             distance_i = {}
             # Add the predecessor and distance policy of the waypoints
             for waypoint in self.v_W[i]:
-                if waypoint in graph:
-                    predecessor, distance = dijkstra_predecessor_and_distance(graph, waypoint)
+                if waypoint in self.graph:
+                    predecessor, distance = dijkstra_predecessor_and_distance(self.graph, waypoint)
                     policy_i[waypoint] = predecessor
                     distance_i[waypoint] = distance
             # Add the predecessor and distance policy of the target
-            predecessor, distance = dijkstra_predecessor_and_distance(graph, self.v_F[i])
+            predecessor, distance = dijkstra_predecessor_and_distance(self.graph, self.v_F[i])
             policy_i[self.v_F[i]] = predecessor
             distance_i[self.v_F[i]] = distance
             self.policies.append(policy_i)
