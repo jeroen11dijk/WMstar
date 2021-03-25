@@ -58,7 +58,6 @@ def setup_benchmark(problem):
     v_F = tuple(tuple(target) for target in problem.goals)
     return grap_new, v_I, v_W, v_F
 
-
 @pytest.mark.parametrize("test_id", get_all_benchmarks(without=[10, 19, 21, 23, 24, 54, 58, 59, 61]))
 def test_python_benchmark(test_id):
     benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", test_id, "M*", "Test", True)

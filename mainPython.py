@@ -1,15 +1,41 @@
-from mapfw import MapfwBenchmarker, get_all_benchmarks
+from Python.mstar import Mstar
 
 
-def solve(problem):
-    from Python.test_python_benchmarks import setup_benchmark
-    from Python.mstar import Mstar
-    graph, v_I, v_W, v_F = setup_benchmark(problem)
-    res = Mstar(graph, v_I, v_W, v_F, ordered=True).solve()[0]
-    return res
+def convert_graph(graph):
+    grap_new = {}
+    height = len(graph)
+    width = len(graph[0])
+    for i in range(len(graph)):
+        for j in range(len(graph[0])):
+            if graph[i][j] == 0:
+                current = (j, i)
+                neighbours = []
+                if i != 0 and graph[i - 1][j] == 0:
+                    neighbours.append((j, i - 1))
+                if j != 0 and graph[i][j - 1] == 0:
+                    neighbours.append((j - 1, i))
+                if i != height - 1 and graph[i + 1][j] == 0:
+                    neighbours.append((j, i + 1))
+                if j != width - 1 and graph[i][j + 1] == 0:
+                    neighbours.append((j + 1, i))
+                grap_new[current] = neighbours
+    return grap_new
 
 
 if __name__ == '__main__':
-    benchmarker = MapfwBenchmarker("42cf6ce8D2A5B954", [67, 68, 69], "WM*", "Python Ordered (TU)", False,
-                                   solver=solve, cores=10)
-    benchmarker.run()
+    n_agents = 2
+    problem_graph = [[0, 0, 0, 0, 0, 0, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 0, 1, 0],
+                     [0, 0, 0, 0, 0, 0, 0]]
+    start = ((6, 0), (0, 0))
+    waypoints = [()] * n_agents
+    end = ((0, 4), (0, 8))
+    graph = convert_graph(problem_graph)
+    res = Mstar(graph, start, waypoints, end, ordered=True).solve()[0]
+    print(res)
