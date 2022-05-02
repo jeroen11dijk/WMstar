@@ -7,7 +7,7 @@ from Python.utils import dijkstra_predecessor_and_distance, phi, dynamic_tsp
 
 
 class Mstar:
-    def __init__(self, graph, v_I, v_W, v_F):
+    def __init__(self, graph, v_I, v_W, v_F, tsp_cache):
         self.n_agents: int = len(v_I)
         self.graph = graph
         self.starts = v_I
@@ -15,7 +15,7 @@ class Mstar:
         self.goals = v_F
         self.policies = {}
         self.distances = {}
-        self.tsp_cache = {}
+        self.tsp_cache = tsp_cache
         self.update_policies_distances_targets()
         self.configurations = {}
         self.open = FastContainsPriorityQueue()
