@@ -34,8 +34,8 @@ if __name__ == '__main__':
                      [0, 1, 0, 1, 0, 1, 0],
                      [0, 0, 0, 0, 0, 0, 0]]
     start = ((6, 0), (0, 0))
-    waypoints = [()] * n_agents
+    waypoints = tuple([()] * n_agents)
     end = ((0, 4), (0, 8))
     graph = convert_graph(problem_graph)
-    res = Mstar(graph, start, waypoints, end, ordered=True).solve()[0]
+    res = Mstar(graph, start, waypoints, end).solve()[0]
     print(res)

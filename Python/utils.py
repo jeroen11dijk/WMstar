@@ -1,11 +1,27 @@
-import itertools
 from heapq import heappush, heappop
 from queue import Queue
 from typing import Dict, Tuple
 
 
-def euclidian_distance(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+def convert_graph(graph):
+    grap_new = {}
+    height = len(graph)
+    width = len(graph[0])
+    for i in range(len(graph)):
+        for j in range(len(graph[0])):
+            if graph[i][j] == 0:
+                current = (j, i)
+                neighbours = []
+                if i != 0 and graph[i - 1][j] == 0:
+                    neighbours.append((j, i - 1))
+                if j != 0 and graph[i][j - 1] == 0:
+                    neighbours.append((j - 1, i))
+                if i != height - 1 and graph[i + 1][j] == 0:
+                    neighbours.append((j, i + 1))
+                if j != width - 1 and graph[i][j + 1] == 0:
+                    neighbours.append((j + 1, i))
+                grap_new[current] = neighbours
+    return grap_new
 
 
 def dijkstra_predecessor_and_distance(G, source):
@@ -33,104 +49,14 @@ def dijkstra_predecessor_and_distance(G, source):
     return pred, dist
 
 
-def tsp_dynamic(start, end, waypoints, distances):
-    matrix = []
-    dummy = (-1, -1)
-    nodes = [start, dummy, end] + waypoints
-    matrix.append([0, 0, distances[end][start]])
-    matrix.append([0, 0, 0])
-    matrix.append([distances[end][start], 0, 0])
-    for i, waypoint in enumerate(waypoints):
-        matrix[0].append(distances[waypoint][start])
-        matrix[1].append(float("inf"))
-        matrix[2].append(distances[waypoint][end])
-        current_row = [distances[waypoint][start], float("inf"), distances[waypoint][end]]
-        for other in waypoints:
-            current_row.append(distances[waypoint][other])
-        matrix.append(current_row)
-    best_path = []
-    indices = held_karp(matrix)
-    for index in indices:
-        best_path.append(nodes[index])
-    return best_path[1:-2]
-
-
-# Credits: https://github.com/CarlEkerot/held-karp
-def held_karp(dists):
+def dynamic_tsp(waypoints, target, distances, cache) -> Dict[Tuple[int, int], int]:
     """
-    Implementation of Held-Karp, an algorithm that solves the Traveling
-    Salesman Problem using dynamic programming with memoization.
-    Parameters:
-        dists: distance matrix
-    Returns:
-        A tuple, (cost, path).
-    """
-    n = len(dists)
-
-    # Maps each subset of the nodes to the cost to reach that subset, as well
-    # as what node it passed before reaching this subset.
-    # Node subsets are represented as set bits.
-    C = {}
-
-    # Set transition cost from initial state
-    for k in range(1, n):
-        C[(1 << k, k)] = (dists[0][k], 0)
-
-    # Iterate subsets of increasing length and store intermediate results
-    # in classic dynamic programming manner
-    for subset_size in range(2, n):
-        for subset in itertools.combinations(range(1, n), subset_size):
-            # Set bits for all nodes in this subset
-            bits = 0
-            for bit in subset:
-                bits |= 1 << bit
-
-            # Find the lowest cost to get to this subset
-            for k in subset:
-                prev = bits & ~(1 << k)
-
-                res = []
-                for m in subset:
-                    if m == 0 or m == k:
-                        continue
-                    res.append((C[(prev, m)][0] + dists[m][k], m))
-                C[(bits, k)] = min(res)
-
-    # We're interested in all bits but the least significant (the start state)
-    bits = (2 ** n - 1) - 1
-
-    # Calculate optimal cost
-    res = []
-    for k in range(1, n):
-        res.append((C[(bits, k)][0] + dists[k][0], k))
-    _, parent = min(res)
-
-    # Backtrack to find full path
-    path = []
-    for i in range(n - 1):
-        path.append(parent)
-        new_bits = bits & ~(1 << parent)
-        _, parent = C[(bits, parent)]
-        bits = new_bits
-
-    # Add implicit start state
-    path.append(0)
-
-    return list(reversed(path))
-
-
-shared_cache = dict()
-
-
-def dynamic_tsp(waypoints, target, distances) -> Dict[Tuple[int, int], int]:
-    """
-    Calculates the minimal path from each way points to the goal, via all
+    Calculates the minimal path from each way point to the goal, via all
     the other waypoints.
     """
-
-    cache_key = tuple(sorted(waypoints))
-    if cache_key in shared_cache:
-        return shared_cache[cache_key]
+    cache_key = tuple(sorted(waypoints) + [target])
+    if cache_key in cache:
+        return cache[cache_key]
 
     ordered_waypoints = list(waypoints)
     n = len(ordered_waypoints)
@@ -169,18 +95,28 @@ def dynamic_tsp(waypoints, target, distances) -> Dict[Tuple[int, int], int]:
     for index, wp in enumerate(ordered_waypoints):
         result[wp] = memory[(full_path, index)][0]
 
-    shared_cache[cache_key] = result
+    cache[cache_key] = result
     return result
 
 
 def phi(v_l, v_k):
-    seen = set()
-    double = []
-    edges = {k: l for k, l in zip(v_k, v_l)}
-    for i, val in enumerate(v_l):
-        if val in seen or val != v_k[i] and val in edges and edges[val] == v_k[i]:
-            double.append(val)
+    res = set()
+    for a1 in range(len(v_k)):
+        for a2 in range(min(a1, len(v_l))):
+            if v_l[a1] == v_l[a2]:
+                res.add(a1)
+                res.add(a2)
+            elif v_k[a1] == v_l[a2] and v_l[a1] == v_k[a2]:
+                res.add(a1)
+                res.add(a2)
+    return len(res) > 0, res
+
+
+def issubset(a, b):
+    for s in a:
+        for os in b:
+            if s.issubset(os):
+                break
         else:
-            seen.add(val)
-    double = set(double)
-    return len(double) > 0, (i for i, val in enumerate(v_l) if val in double)
+            return False
+    return True
